@@ -25,6 +25,7 @@ class AttemptStart(BaseModel):
     started_at: datetime
     time_limit_seconds: int
     question_count: int
+    violation_limit: int
 
 
 class AttemptQuestion(BaseModel):
@@ -44,6 +45,7 @@ class AttemptQuestions(BaseModel):
     started_at: datetime
     elapsed_seconds: int
     time_limit_seconds: int
+    violation_count: int
     questions: list[AttemptQuestion]
 
 
@@ -59,7 +61,14 @@ class AnswerResponse(BaseModel):
 
 
 class EventRequest(BaseModel):
-    event_type: Literal["tab_hidden", "tab_visible", "window_blur", "window_focus"]
+    event_type: Literal[
+        "tab_hidden",
+        "tab_visible",
+        "window_blur",
+        "window_focus",
+        "fullscreen_exit",
+        "fullscreen_enter",
+    ]
 
 
 class EventResponse(BaseModel):
@@ -69,6 +78,8 @@ class EventResponse(BaseModel):
     event_count: int
     tab_switch_count: int
     focus_change_count: int
+    violation_count: int
+    attempt_status: str
 
 
 class SubmittedAnswer(BaseModel):

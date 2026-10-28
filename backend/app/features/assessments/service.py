@@ -8,6 +8,9 @@ from app.core.database import database
 from app.models.assessment import Assessment, AssessmentAttempt
 
 
+ASSESSMENT_VIOLATION_LIMIT = 3
+
+
 def _now() -> datetime:
     return datetime.now(timezone.utc)
 
@@ -47,6 +50,49 @@ def _ensure_in_progress(attempt: AssessmentAttempt, time_limit_minutes: int) -> 
         raise HTTPException(status_code=409, detail="The time limit has elapsed; submit your attempt.")
 
 
+def _violation_count(db: sqlite3.Connection, attempt_id: int) -> int:
+    events = db.execute(
+        """SELECT event_type FROM assessment_events
+           WHERE attempt_id = ? ORDER BY id""",
+        (attempt_id,),
+    ).fetchall()
+    violation_count = 0
+    incident_open = False
+    for event in events:
+        event_type = event["event_type"]
+        if event_type in {"tab_hidden", "window_blur", "fullscreen_exit"}:
+            if not incident_open:
+                violation_count += 1
+                incident_open = True
+        elif event_type in {"tab_visible", "window_focus", "fullscreen_enter"}:
+            incident_open = False
+    return violation_count
+
+
+def _finalize_attempt(
+    db: sqlite3.Connection,
+    attempt: AssessmentAttempt,
+    time_limit_minutes: int,
+) -> None:
+    rows = db.execute(
+        """SELECT questions.correct_answer, answers.selected_option
+           FROM assessment_questions AS questions
+           LEFT JOIN assessment_answers AS answers
+             ON answers.attempt_id = ? AND answers.question_id = questions.id
+           WHERE questions.assessment_id = ?""",
+        (attempt.id, attempt.assessment_id),
+    ).fetchall()
+    score = sum(row["selected_option"] == row["correct_answer"] for row in rows)
+    now = _now()
+    duration = min(_duration_seconds(attempt.started_at, now), time_limit_minutes * 60)
+    db.execute(
+        """UPDATE assessment_attempts
+           SET status = 'submitted', submitted_at = ?, duration_seconds = ?, score = ?
+           WHERE id = ? AND user_id = ? AND status = 'in_progress'""",
+        (now.isoformat(), duration, score, attempt.id, attempt.user_id),
+    )
+
+
 def list_assessments(skill: str | None, topic: str | None) -> list[dict]:
     query = """SELECT assessments.*,
                       (SELECT COUNT(*) FROM assessment_questions
@@ -81,6 +127,13 @@ def start_attempt(assessment_id: str, user_id: int) -> dict:
         assessment = _get_assessment(db, assessment_id)
         if assessment.question_count == 0:
             raise HTTPException(status_code=409, detail="This assessment has no questions.")
+        existing_attempt = db.execute(
+            """SELECT 1 FROM assessment_attempts
+               WHERE user_id = ? AND assessment_id = ? LIMIT 1""",
+            (user_id, assessment_id),
+        ).fetchone()
+        if existing_attempt:
+            raise HTTPException(status_code=409, detail="You have already started this assessment.")
         cursor = db.execute(
             """INSERT INTO assessment_attempts
                (user_id, assessment_id, status, started_at, total_questions)
@@ -94,6 +147,7 @@ def start_attempt(assessment_id: str, user_id: int) -> dict:
             "started_at": now,
             "time_limit_seconds": assessment.time_limit_minutes * 60,
             "question_count": assessment.question_count,
+            "violation_limit": ASSESSMENT_VIOLATION_LIMIT,
         }
 
 
@@ -101,6 +155,12 @@ def get_attempt_questions(attempt_id: int, user_id: int) -> dict:
     with database() as db:
         attempt = _get_attempt(db, attempt_id, user_id)
         assessment = _get_assessment(db, attempt.assessment_id)
+        if (
+            attempt.status == "in_progress"
+            and _duration_seconds(attempt.started_at) >= assessment.time_limit_minutes * 60
+        ):
+            _finalize_attempt(db, attempt, assessment.time_limit_minutes)
+            attempt = _get_attempt(db, attempt_id, user_id)
         rows = db.execute(
             """SELECT questions.*, answers.selected_option
                FROM assessment_questions AS questions
@@ -110,6 +170,7 @@ def get_attempt_questions(attempt_id: int, user_id: int) -> dict:
                ORDER BY questions.position""",
             (attempt_id, attempt.assessment_id),
         ).fetchall()
+        violation_count = _violation_count(db, attempt_id)
     questions = []
     for index, row in enumerate(rows):
         questions.append(
@@ -134,6 +195,7 @@ def get_attempt_questions(attempt_id: int, user_id: int) -> dict:
             else _duration_seconds(attempt.started_at)
         ),
         "time_limit_seconds": assessment.time_limit_minutes * 60,
+        "violation_count": violation_count,
         "questions": questions,
     }
 
@@ -141,6 +203,12 @@ def get_attempt_questions(attempt_id: int, user_id: int) -> dict:
 def get_attempt_question(attempt_id: int, question_id: str, user_id: int) -> dict:
     with database() as db:
         attempt = _get_attempt(db, attempt_id, user_id)
+        assessment = _get_assessment(db, attempt.assessment_id)
+        if (
+            attempt.status == "in_progress"
+            and _duration_seconds(attempt.started_at) >= assessment.time_limit_minutes * 60
+        ):
+            _ensure_in_progress(attempt, assessment.time_limit_minutes)
         rows = db.execute(
             """SELECT questions.*, answers.selected_option
                FROM assessment_questions AS questions
@@ -169,6 +237,11 @@ def save_answer(attempt_id: int, question_id: str, selected_option: int, user_id
     with database() as db:
         attempt = _get_attempt(db, attempt_id, user_id)
         assessment = _get_assessment(db, attempt.assessment_id)
+        if (
+            attempt.status == "in_progress"
+            and _duration_seconds(attempt.started_at) >= assessment.time_limit_minutes * 60
+        ):
+            _ensure_in_progress(attempt, assessment.time_limit_minutes)
         question = db.execute(
             """SELECT id, options_json FROM assessment_questions
                WHERE id = ? AND assessment_id = ?""",
@@ -196,15 +269,25 @@ def save_answer(attempt_id: int, question_id: str, selected_option: int, user_id
 
 def record_event(attempt_id: int, event_type: str, user_id: int) -> dict:
     recorded_at = _now()
+    time_expired = False
     with database() as db:
         attempt = _get_attempt(db, attempt_id, user_id)
         if attempt.status != "in_progress":
             raise HTTPException(status_code=409, detail="This assessment attempt has already been submitted.")
-        db.execute(
-            """INSERT INTO assessment_events (attempt_id, event_type, recorded_at)
-               VALUES (?, ?, ?)""",
-            (attempt_id, event_type, recorded_at.isoformat()),
-        )
+        assessment = _get_assessment(db, attempt.assessment_id)
+        if _duration_seconds(attempt.started_at) >= assessment.time_limit_minutes * 60:
+            _finalize_attempt(db, attempt, assessment.time_limit_minutes)
+            time_expired = True
+        else:
+            db.execute(
+                """INSERT INTO assessment_events (attempt_id, event_type, recorded_at)
+                   VALUES (?, ?, ?)""",
+                (attempt_id, event_type, recorded_at.isoformat()),
+            )
+            violation_count = _violation_count(db, attempt_id)
+            if violation_count >= ASSESSMENT_VIOLATION_LIMIT:
+                _finalize_attempt(db, attempt, assessment.time_limit_minutes)
+                attempt = _get_attempt(db, attempt_id, user_id)
         counts = db.execute(
             """SELECT COUNT(*) AS event_count,
                       SUM(CASE WHEN event_type = 'tab_hidden' THEN 1 ELSE 0 END) AS tab_switch_count,
@@ -212,6 +295,11 @@ def record_event(attempt_id: int, event_type: str, user_id: int) -> dict:
                FROM assessment_events WHERE attempt_id = ?""",
             (attempt_id,),
         ).fetchone()
+        if time_expired:
+            violation_count = _violation_count(db, attempt_id)
+            attempt = _get_attempt(db, attempt_id, user_id)
+    if time_expired:
+        raise HTTPException(status_code=409, detail="The time limit has elapsed; your attempt was submitted.")
     return {
         "attempt_id": attempt_id,
         "event_type": event_type,
@@ -219,6 +307,8 @@ def record_event(attempt_id: int, event_type: str, user_id: int) -> dict:
         "event_count": counts["event_count"],
         "tab_switch_count": counts["tab_switch_count"] or 0,
         "focus_change_count": counts["focus_change_count"] or 0,
+        "violation_count": violation_count,
+        "attempt_status": attempt.status,
     }
 
 
@@ -271,23 +361,8 @@ def submit_attempt(attempt_id: int, user_id: int) -> dict:
         attempt = _get_attempt(db, attempt_id, user_id)
         if attempt.status == "submitted":
             return _result(db, attempt_id, user_id)
-        rows = db.execute(
-            """SELECT questions.correct_answer, answers.selected_option
-               FROM assessment_questions AS questions
-               LEFT JOIN assessment_answers AS answers
-                 ON answers.attempt_id = ? AND answers.question_id = questions.id
-               WHERE questions.assessment_id = ?""",
-            (attempt_id, attempt.assessment_id),
-        ).fetchall()
-        score = sum(row["selected_option"] == row["correct_answer"] for row in rows)
-        now = _now()
-        duration = _duration_seconds(attempt.started_at, now)
-        db.execute(
-            """UPDATE assessment_attempts
-               SET status = 'submitted', submitted_at = ?, duration_seconds = ?, score = ?
-               WHERE id = ? AND user_id = ? AND status = 'in_progress'""",
-            (now.isoformat(), duration, score, attempt_id, user_id),
-        )
+        assessment = _get_assessment(db, attempt.assessment_id)
+        _finalize_attempt(db, attempt, assessment.time_limit_minutes)
         return _result(db, attempt_id, user_id)
 
 

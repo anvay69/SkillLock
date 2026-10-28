@@ -142,6 +142,7 @@ button{cursor:pointer}
 .history-status{font-family:"DM Mono",monospace;text-transform:uppercase;font-size:8px;letter-spacing:.06em;color:#62826d;background:#edf4ed;padding:6px 8px;border-radius:12px}
 .history-status.in_progress{color:#956b3c;background:#f8f1e4}
 .assessment-page{min-height:100vh;padding:0 6.5vw;display:flex;flex-direction:column}
+.assessment-page:fullscreen{background:#f6f7f3;overflow-y:auto}
 .assessment-wrap{width:min(760px,100%);margin:52px auto 70px;flex:1}
 .assessment-intro{background:#fff;border:1px solid #e8ede7;border-radius:6px;padding:35px 38px;box-shadow:0 10px 28px #263a2b05}
 .assessment-intro>.eyebrow{color:var(--green);margin-bottom:10px}
@@ -156,6 +157,10 @@ button{cursor:pointer}
 .assessment-timer{font-family:"DM Mono",monospace;color:#315d42;background:#edf4ed;padding:9px 12px;border-radius:4px;font-size:13px}
 .assessment-timer.urgent{color:#a54434;background:#f9eae5}
 .question-panel{background:#fff;border:1px solid #e8ede7;border-radius:6px;padding:30px 34px;box-shadow:0 10px 28px #263a2b05}
+.assessment-focused{outline:none}
+.assessment-session-status{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px;color:#68776d;font-family:"DM Mono",monospace;font-size:10px}
+.assessment-session-status .secondary-button{border:1px solid #dfe7df;background:#fff;color:#486b53;border-radius:4px;padding:8px 11px;font-family:"DM Sans",sans-serif;font-size:10px;font-weight:600}
+.assessment-warning{padding:10px 12px;border:1px solid #f0d7b4;border-radius:4px;background:#fff8ec;color:#885c22;font-size:11px;line-height:1.55}
 .question-panel>.eyebrow{color:#67836e;margin-bottom:12px}
 .question-panel h1{font-size:23px;line-height:1.45;letter-spacing:-.4px;margin:24px 0}
 .question-progress{display:flex;gap:7px;flex-wrap:wrap}

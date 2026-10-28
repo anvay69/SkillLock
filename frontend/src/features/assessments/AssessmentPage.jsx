@@ -41,12 +41,18 @@ function ResultView({ result, onDashboard }) {
 }
 
 export default function AssessmentPage({ assessmentId, onDashboard }) {
+  const assessmentRoot = useRef(null);
+  const eventQueue = useRef(Promise.resolve());
+  const incidentOpen = useRef(false);
+  const incidentType = useRef(null);
   const [assessment, setAssessment] = useState(null);
   const [attempt, setAttempt] = useState(null);
   const [questions, setQuestions] = useState([]);
   const [currentQuestion, setCurrentQuestion] = useState(null);
   const [result, setResult] = useState(null);
   const [remainingSeconds, setRemainingSeconds] = useState(null);
+  const [violationCount, setViolationCount] = useState(0);
+  const [warning, setWarning] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -76,18 +82,36 @@ export default function AssessmentPage({ assessmentId, onDashboard }) {
   }, [attempt]);
 
   async function startAssessment() {
-    setBusy(true);
     setError("");
+    const root = assessmentRoot.current;
+    if (!root?.requestFullscreen) {
+      setError("Fullscreen is unavailable in this browser. Allow fullscreen and try again.");
+      return;
+    }
+    try {
+      await root.requestFullscreen();
+    } catch {
+      setError("Fullscreen could not be started. Allow fullscreen and try again; your attempt has not begun.");
+      return;
+    }
+
+    setBusy(true);
+    let attemptStarted = false;
     try {
       const started = await request(`/api/assessments/${encodeURIComponent(assessmentId)}/attempts`, { method: "POST" });
+      attemptStarted = true;
       setAttempt(started);
       const attemptQuestions = await request(`/api/assessments/attempts/${started.attempt_id}/questions`);
       setQuestions(attemptQuestions.questions);
       setCurrentQuestion(attemptQuestions.questions[0] || null);
+      setViolationCount(attemptQuestions.violation_count);
       const deadline = Date.parse(started.started_at) + started.time_limit_seconds * 1000;
       setRemainingSeconds(Math.max(0, Math.ceil((deadline - Date.now()) / 1000)));
     } catch (problem) {
       setError(problem.message);
+      if (!attemptStarted) {
+        document.exitFullscreen?.().catch(() => {});
+      }
     } finally {
       setBusy(false);
     }
@@ -107,24 +131,96 @@ export default function AssessmentPage({ assessmentId, onDashboard }) {
   useEffect(() => {
     if (!attempt || result) return undefined;
     const report = (eventType) => {
-      request(`/api/assessments/attempts/${attempt.attempt_id}/events`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ event_type: eventType }),
-      }).catch((problem) => setError(problem.message));
+      eventQueue.current = eventQueue.current
+        .then(() => request(`/api/assessments/attempts/${attempt.attempt_id}/events`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ event_type: eventType }),
+        }))
+        .then((response) => {
+          setViolationCount(response.violation_count);
+          if (response.attempt_status === "submitted") submitAssessment();
+        })
+        .catch((problem) => {
+          setError(problem.message);
+          if (problem.message.toLowerCase().includes("time limit")) submitAssessment();
+        });
     };
-    const visibilityChanged = () => report(document.hidden ? "tab_hidden" : "tab_visible");
-    const blurred = () => report("window_blur");
-    const focused = () => report("window_focus");
+
+    const syncPresence = () => {
+      const hidden = document.hidden;
+      const focused = document.hasFocus();
+      const fullscreen = document.fullscreenElement === assessmentRoot.current;
+      const away = hidden || !focused || !fullscreen;
+      if (away && !incidentOpen.current) {
+        incidentOpen.current = true;
+        incidentType.current = hidden ? "tab_hidden" : !focused ? "window_blur" : "fullscreen_exit";
+        setWarning("Leaving the assessment window or fullscreen is recorded as a violation.");
+        report(incidentType.current);
+      } else if (!away && incidentOpen.current) {
+        const returnEvent = {
+          tab_hidden: "tab_visible",
+          window_blur: "window_focus",
+          fullscreen_exit: "fullscreen_enter",
+        }[incidentType.current];
+        incidentOpen.current = false;
+        incidentType.current = null;
+        report(returnEvent);
+      }
+    };
+    const preventLeave = (event) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+    const visibilityChanged = () => syncPresence();
+    const windowFocusChanged = () => syncPresence();
+    const fullscreenChanged = () => {
+      if (document.fullscreenElement !== assessmentRoot.current && !result) {
+        setWarning("Fullscreen ended. Return to fullscreen to continue; this event is recorded.");
+      }
+      syncPresence();
+    };
+
     document.addEventListener("visibilitychange", visibilityChanged);
-    window.addEventListener("blur", blurred);
-    window.addEventListener("focus", focused);
+    document.addEventListener("fullscreenchange", fullscreenChanged);
+    window.addEventListener("blur", windowFocusChanged);
+    window.addEventListener("focus", windowFocusChanged);
+    window.addEventListener("beforeunload", preventLeave);
+    syncPresence();
     return () => {
       document.removeEventListener("visibilitychange", visibilityChanged);
-      window.removeEventListener("blur", blurred);
-      window.removeEventListener("focus", focused);
+      document.removeEventListener("fullscreenchange", fullscreenChanged);
+      window.removeEventListener("blur", windowFocusChanged);
+      window.removeEventListener("focus", windowFocusChanged);
+      window.removeEventListener("beforeunload", preventLeave);
     };
+  }, [attempt, result, submitAssessment]);
+
+  useEffect(() => {
+    if (!result && !attempt) return;
+    if (result && document.fullscreenElement) {
+      document.exitFullscreen?.().catch(() => {});
+    }
   }, [attempt, result]);
+
+  useEffect(() => {
+    if (!attempt || result || !warning.includes("Fullscreen ended")) return;
+    const onFullscreen = () => {
+      if (document.fullscreenElement === assessmentRoot.current) {
+        setWarning("Fullscreen restored. Continue with your assessment.");
+      }
+    };
+    document.addEventListener("fullscreenchange", onFullscreen);
+    return () => document.removeEventListener("fullscreenchange", onFullscreen);
+  }, [attempt, result, warning]);
+
+  async function returnToFullscreen() {
+    try {
+      await assessmentRoot.current?.requestFullscreen();
+    } catch (problem) {
+      setError(`Could not return to fullscreen: ${problem.message}`);
+    }
+  }
 
   async function navigateTo(questionId) {
     if (!attempt || !questionId) return;
@@ -165,7 +261,7 @@ export default function AssessmentPage({ assessmentId, onDashboard }) {
   if (result) return <ResultView result={result} onDashboard={onDashboard} />;
 
   return (
-    <main className="assessment-page">
+    <main className="assessment-page" ref={assessmentRoot}>
       <BrandHeader>
         {attempt
           ? <span className={`assessment-timer ${remainingSeconds < 60 ? "urgent" : ""}`}>{formatTime(remainingSeconds ?? 0)}</span>
@@ -186,14 +282,23 @@ export default function AssessmentPage({ assessmentId, onDashboard }) {
               <h2>Instructions</h2>
               <p>{assessment.instructions}</p>
               <p>Choose one answer for each question. You may change your answers before submitting.</p>
+              <p>Fullscreen is required to begin. Leaving the assessment window or exiting fullscreen may be recorded and counts toward the violation limit. Three recorded violations automatically submit your attempt.</p>
+              <p>Browser monitoring is limited and cannot prevent access to other applications, devices, developer tools, or AI tools.</p>
             </div>
             <button className="primary-button assessment-action" onClick={startAssessment} disabled={busy}>
-              {busy ? "Starting..." : "Start assessment"} <span>→</span>
+              {busy ? "Starting..." : "Start Assessment"} <span>→</span>
             </button>
           </section>
         )}
         {attempt && currentQuestion && (
-          <section className="question-panel">
+          <section className="question-panel assessment-focused">
+            <div className="assessment-session-status">
+              <span>Violations: {violationCount} / {attempt.violation_limit}</span>
+              {document.fullscreenElement !== assessmentRoot.current && (
+                <button type="button" className="secondary-button" onClick={returnToFullscreen}>Return to fullscreen</button>
+              )}
+            </div>
+            {warning && <p className="assessment-warning" role="alert">{warning} {violationCount} of {attempt.violation_limit} violations recorded.</p>}
             <p className="eyebrow">{assessment?.title} · QUESTION {currentQuestion.position + 1} OF {questions.length}</p>
             <div className="question-progress">
               {questions.map((question, index) => (
