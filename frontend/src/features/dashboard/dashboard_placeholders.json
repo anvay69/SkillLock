@@ -1,16 +1,4 @@
 {
-  "assessments": [
-    {
-      "title": "Technical skills",
-      "description": "A place for your next skills check.",
-      "label": "COMING SOON"
-    },
-    {
-      "title": "Problem solving",
-      "description": "Show how you approach a challenge.",
-      "label": "COMING SOON"
-    }
-  ],
   "jobs": [
     {
       "title": "Your next opportunity",
