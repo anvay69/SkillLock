@@ -5,6 +5,7 @@ from fastapi.staticfiles import StaticFiles
 from app.api.routes import auth, skills
 from app.core.config import UPLOADS
 from app.core.database import initialize_database
+from app.features.assessments.routes import router as assessments_router
 from app.features.resume.routes import router as resume_router
 
 
@@ -21,6 +22,7 @@ app.mount("/uploads", StaticFiles(directory=UPLOADS), name="uploads")
 app.include_router(auth.router)
 app.include_router(skills.router)
 app.include_router(resume_router)
+app.include_router(assessments_router)
 
 
 @app.on_event("startup")

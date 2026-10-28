@@ -11,6 +11,368 @@
     "Git",
     "CSS"
   ],
+  "assessments": [
+    {
+      "id": "python",
+      "title": "Python Fundamentals",
+      "description": "Check your understanding of Python syntax and core concepts.",
+      "skill": "Python",
+      "instructions": "Choose one answer for each question. You can navigate between questions and change answers until you submit.",
+      "time_limit_minutes": 20,
+      "questions": [
+        {
+          "id": "python-01",
+          "prompt": "Which keyword defines a function in Python?",
+          "options": ["func", "def", "function", "lambda"],
+          "correct_answer": 1,
+          "explanation": "The def keyword starts a named function definition.",
+          "difficulty": "beginner"
+        },
+        {
+          "id": "python-02",
+          "prompt": "What is the type of the value returned by range(4)?",
+          "options": ["list", "tuple", "range", "iterator"],
+          "correct_answer": 2,
+          "explanation": "range() returns a range object, which can be iterated without building a list.",
+          "difficulty": "beginner"
+        },
+        {
+          "id": "python-03",
+          "prompt": "Which collection preserves insertion order and allows duplicate values?",
+          "options": ["set", "list", "dict keys", "frozenset"],
+          "correct_answer": 1,
+          "explanation": "Lists preserve order and can contain repeated values.",
+          "difficulty": "beginner"
+        },
+        {
+          "id": "python-04",
+          "prompt": "What does len({'a': 1, 'b': 2}) return?",
+          "options": ["1", "2", "3", "An error"],
+          "correct_answer": 1,
+          "explanation": "len() on a dictionary returns the number of keys.",
+          "difficulty": "beginner"
+        },
+        {
+          "id": "python-05",
+          "prompt": "Which statement correctly handles an exception?",
+          "options": ["try / except", "if / error", "do / catch", "test / handle"],
+          "correct_answer": 0,
+          "explanation": "Python uses try and except blocks to catch exceptions.",
+          "difficulty": "beginner"
+        },
+        {
+          "id": "python-06",
+          "prompt": "What does a dictionary's get('x', 0) return when key 'x' is missing?",
+          "options": ["None", "0", "KeyError", "False"],
+          "correct_answer": 1,
+          "explanation": "dict.get returns its supplied default when the key is not present.",
+          "difficulty": "intermediate"
+        },
+        {
+          "id": "python-07",
+          "prompt": "What is the result of [x * 2 for x in range(3)]?",
+          "options": ["[0, 2, 4]", "[2, 4, 6]", "[0, 1, 2]", "(0, 2, 4)"],
+          "correct_answer": 0,
+          "explanation": "range(3) yields 0, 1, and 2, each multiplied by two.",
+          "difficulty": "beginner"
+        },
+        {
+          "id": "python-08",
+          "prompt": "What is the main purpose of a context manager used with the with statement?",
+          "options": ["To define a class", "To manage setup and cleanup of a resource", "To catch every exception", "To create a thread"],
+          "correct_answer": 1,
+          "explanation": "Context managers reliably perform setup and cleanup, such as closing a file.",
+          "difficulty": "intermediate"
+        },
+        {
+          "id": "python-09",
+          "prompt": "Which statement about Python tuples is correct?",
+          "options": ["Tuples are always mutable", "Tuples cannot contain duplicates", "Tuples are immutable sequences", "Tuples only store numbers"],
+          "correct_answer": 2,
+          "explanation": "A tuple's sequence structure cannot be changed after it is created.",
+          "difficulty": "intermediate"
+        },
+        {
+          "id": "python-10",
+          "prompt": "What does enumerate(items) provide when iterated?",
+          "options": ["Only item values", "Index and item pairs", "A sorted copy", "Dictionary keys"],
+          "correct_answer": 1,
+          "explanation": "enumerate yields pairs containing each index and corresponding item.",
+          "difficulty": "intermediate"
+        }
+      ]
+    },
+    {
+      "id": "web-development",
+      "title": "Web Development Basics",
+      "description": "Explore core concepts across HTML, CSS, JavaScript, and HTTP.",
+      "skill": "Web Development",
+      "instructions": "Choose one answer for each question. You can navigate between questions and change answers until you submit.",
+      "time_limit_minutes": 20,
+      "questions": [
+        {
+          "id": "web-01",
+          "prompt": "Which HTML element is intended for a page's main content?",
+          "options": ["<main>", "<aside>", "<footer>", "<meta>"],
+          "correct_answer": 0,
+          "explanation": "The main element represents the dominant content of the document.",
+          "difficulty": "beginner"
+        },
+        {
+          "id": "web-02",
+          "prompt": "Which CSS property changes the text color?",
+          "options": ["font-style", "color", "background", "text-weight"],
+          "correct_answer": 1,
+          "explanation": "The color property sets an element's foreground text color.",
+          "difficulty": "beginner"
+        },
+        {
+          "id": "web-03",
+          "prompt": "Which JavaScript declaration creates a block-scoped variable that can be reassigned?",
+          "options": ["const", "let", "static", "define"],
+          "correct_answer": 1,
+          "explanation": "let declares a block-scoped binding that can be reassigned.",
+          "difficulty": "beginner"
+        },
+        {
+          "id": "web-04",
+          "prompt": "What does an HTTP 404 status code mean?",
+          "options": ["Request succeeded", "Authentication is required", "Resource was not found", "Server permanently redirected"],
+          "correct_answer": 2,
+          "explanation": "404 indicates that the requested resource could not be found.",
+          "difficulty": "beginner"
+        },
+        {
+          "id": "web-05",
+          "prompt": "Which HTML attribute provides alternative text for an image?",
+          "options": ["title", "alt", "srcset", "role"],
+          "correct_answer": 1,
+          "explanation": "The alt attribute supplies text alternatives for images.",
+          "difficulty": "beginner"
+        },
+        {
+          "id": "web-06",
+          "prompt": "Which CSS layout system is designed for arranging items along one primary axis?",
+          "options": ["Flexbox", "CSS columns", "Float layout", "Position: fixed"],
+          "correct_answer": 0,
+          "explanation": "Flexbox is a one-dimensional layout system for a row or column.",
+          "difficulty": "intermediate"
+        },
+        {
+          "id": "web-07",
+          "prompt": "What does JSON.parse(text) do?",
+          "options": ["Converts a JavaScript value to JSON text", "Parses JSON text into a JavaScript value", "Validates an HTML document", "Sends an HTTP request"],
+          "correct_answer": 1,
+          "explanation": "JSON.parse parses a JSON-formatted string into its JavaScript value.",
+          "difficulty": "beginner"
+        },
+        {
+          "id": "web-08",
+          "prompt": "Which HTTP method is conventionally used to retrieve a resource?",
+          "options": ["GET", "PATCH", "DELETE", "TRACE"],
+          "correct_answer": 0,
+          "explanation": "GET requests a representation of a resource without intending to modify it.",
+          "difficulty": "beginner"
+        },
+        {
+          "id": "web-09",
+          "prompt": "In CSS, which selector has the highest specificity?",
+          "options": [".card", "main p", "#content", "*"],
+          "correct_answer": 2,
+          "explanation": "An ID selector has greater specificity than a class, type, or universal selector.",
+          "difficulty": "intermediate"
+        },
+        {
+          "id": "web-10",
+          "prompt": "What does event.preventDefault() do in a browser event handler?",
+          "options": ["Stops the event from bubbling", "Cancels the event's default browser action", "Removes the event listener", "Reloads the current page"],
+          "correct_answer": 1,
+          "explanation": "preventDefault cancels the browser's default action associated with the event.",
+          "difficulty": "intermediate"
+        }
+      ]
+    },
+    {
+      "id": "c-programming",
+      "title": "C Programming Fundamentals",
+      "description": "Review C language basics, memory, pointers, and functions.",
+      "skill": "C Programming",
+      "instructions": "Choose one answer for each question. You can navigate between questions and change answers until you submit.",
+      "time_limit_minutes": 20,
+      "questions": [
+        {
+          "id": "c-01",
+          "prompt": "Which header declares printf?",
+          "options": ["<stdlib.h>", "<stdio.h>", "<string.h>", "<math.h>"],
+          "correct_answer": 1,
+          "explanation": "printf is declared by the standard input/output header, stdio.h.",
+          "difficulty": "beginner"
+        },
+        {
+          "id": "c-02",
+          "prompt": "Which format specifier is commonly used with printf for an int?",
+          "options": ["%f", "%c", "%d", "%s"],
+          "correct_answer": 2,
+          "explanation": "%d is the standard printf conversion specifier for a signed decimal int.",
+          "difficulty": "beginner"
+        },
+        {
+          "id": "c-03",
+          "prompt": "What does the unary * operator do when applied to a valid pointer?",
+          "options": ["Declares a function", "Dereferences the pointer", "Allocates memory", "Returns the pointer's size"],
+          "correct_answer": 1,
+          "explanation": "Unary * accesses the object to which a pointer points.",
+          "difficulty": "beginner"
+        },
+        {
+          "id": "c-04",
+          "prompt": "Which character terminates a C string?",
+          "options": ["'\\n'", "'\\0'", "'\\t'", "' '"],
+          "correct_answer": 1,
+          "explanation": "C strings end with the null character, whose value is written '\\0'.",
+          "difficulty": "beginner"
+        },
+        {
+          "id": "c-05",
+          "prompt": "Which function releases memory allocated by malloc?",
+          "options": ["delete", "remove", "free", "clear"],
+          "correct_answer": 2,
+          "explanation": "free releases dynamically allocated memory obtained from malloc-family functions.",
+          "difficulty": "beginner"
+        },
+        {
+          "id": "c-06",
+          "prompt": "What is the value of sizeof(char) in C?",
+          "options": ["Always 1", "Always 2", "Always 4", "Depends on the compiler"],
+          "correct_answer": 0,
+          "explanation": "sizeof(char) is defined to be 1 byte in C.",
+          "difficulty": "beginner"
+        },
+        {
+          "id": "c-07",
+          "prompt": "What does a function's return type void indicate?",
+          "options": ["It returns a pointer", "It returns no value", "It is only callable once", "It has no parameters"],
+          "correct_answer": 1,
+          "explanation": "A void return type means the function does not return a value.",
+          "difficulty": "beginner"
+        },
+        {
+          "id": "c-08",
+          "prompt": "In most expressions, what does an array name convert to?",
+          "options": ["A pointer to its first element", "The array's element count", "A copy of the full array", "A null pointer"],
+          "correct_answer": 0,
+          "explanation": "An array expression usually converts to a pointer to its first element, with some exceptions.",
+          "difficulty": "intermediate"
+        },
+        {
+          "id": "c-09",
+          "prompt": "Which operator accesses a structure member through a pointer?",
+          "options": [".", "->", "::", "&"],
+          "correct_answer": 1,
+          "explanation": "The -> operator accesses a member through a pointer to a structure or union.",
+          "difficulty": "beginner"
+        },
+        {
+          "id": "c-10",
+          "prompt": "What is the purpose of #include in a C source file?",
+          "options": ["Execute a function", "Request preprocessing to include a header", "Allocate a global variable", "End a loop"],
+          "correct_answer": 1,
+          "explanation": "#include is a preprocessing directive that includes header contents for compilation.",
+          "difficulty": "beginner"
+        }
+      ]
+    },
+    {
+      "id": "artificial-intelligence",
+      "title": "Artificial Intelligence Basics",
+      "description": "Explore foundational ideas in AI and machine learning.",
+      "skill": "Artificial Intelligence",
+      "instructions": "Choose one answer for each question. You can navigate between questions and change answers until you submit.",
+      "time_limit_minutes": 20,
+      "questions": [
+        {
+          "id": "ai-01",
+          "prompt": "In supervised learning, training examples typically include:",
+          "options": ["Inputs and their target labels", "Only unlabeled inputs", "Only model predictions", "A list of model parameters"],
+          "correct_answer": 0,
+          "explanation": "Supervised learning uses examples paired with target outputs or labels.",
+          "difficulty": "beginner"
+        },
+        {
+          "id": "ai-02",
+          "prompt": "What is a classification model generally designed to predict?",
+          "options": ["A category or class", "A continuous measurement only", "A database schema", "A training schedule"],
+          "correct_answer": 0,
+          "explanation": "Classification predicts discrete labels such as categories.",
+          "difficulty": "beginner"
+        },
+        {
+          "id": "ai-03",
+          "prompt": "What is overfitting?",
+          "options": ["A model performs well on training data but poorly on new data", "A model has no parameters", "A model trains without data", "A model always predicts the average"],
+          "correct_answer": 0,
+          "explanation": "An overfit model has learned training-specific patterns that do not generalize well.",
+          "difficulty": "beginner"
+        },
+        {
+          "id": "ai-04",
+          "prompt": "Which dataset is commonly held out to estimate performance on unseen data?",
+          "options": ["Training set", "Test set", "Feature set", "Gradient set"],
+          "correct_answer": 1,
+          "explanation": "A test set is held out from training to evaluate generalization.",
+          "difficulty": "beginner"
+        },
+        {
+          "id": "ai-05",
+          "prompt": "In a neural network, what is the purpose of an activation function?",
+          "options": ["Introduce non-linearity", "Sort the training data", "Choose the dataset size", "Encrypt the model weights"],
+          "correct_answer": 0,
+          "explanation": "Activation functions let networks represent non-linear relationships.",
+          "difficulty": "beginner"
+        },
+        {
+          "id": "ai-06",
+          "prompt": "What does a clustering algorithm usually do?",
+          "options": ["Group similar data points without requiring class labels", "Predict only numeric values", "Translate source code", "Remove all outliers"],
+          "correct_answer": 0,
+          "explanation": "Clustering is an unsupervised approach that groups data by similarity.",
+          "difficulty": "beginner"
+        },
+        {
+          "id": "ai-07",
+          "prompt": "What is a feature in a machine-learning dataset?",
+          "options": ["An input variable used by a model", "The final model score", "A type of optimizer", "A hardware processor"],
+          "correct_answer": 0,
+          "explanation": "Features are input attributes used to make predictions.",
+          "difficulty": "beginner"
+        },
+        {
+          "id": "ai-08",
+          "prompt": "What is the main purpose of a validation set?",
+          "options": ["Tune model choices during development", "Replace all training examples", "Store the final deployed model", "Guarantee perfect accuracy"],
+          "correct_answer": 0,
+          "explanation": "Validation data helps compare models or tune hyperparameters without using the final test set.",
+          "difficulty": "intermediate"
+        },
+        {
+          "id": "ai-09",
+          "prompt": "In reinforcement learning, an agent commonly learns by:",
+          "options": ["Receiving rewards or penalties for actions", "Memorizing labeled examples only", "Sorting features alphabetically", "Following a fixed set of labels"],
+          "correct_answer": 0,
+          "explanation": "Reinforcement learning uses interaction and reward signals to improve action choices.",
+          "difficulty": "beginner"
+        },
+        {
+          "id": "ai-10",
+          "prompt": "Which metric is the fraction of predicted positive cases that are actually positive?",
+          "options": ["Recall", "Precision", "Mean squared error", "Specificity"],
+          "correct_answer": 1,
+          "explanation": "Precision is true positives divided by all predicted positives.",
+          "difficulty": "intermediate"
+        }
+      ]
+    }
+  ],
   "candidate": {
     "name": "Alex Morgan",
     "username": "alexmorgan",

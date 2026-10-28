@@ -33,7 +33,7 @@ backend/
     │   │   └── service.py
     │   ├── job_matching/               # Proposed
     │   │   └── routes.py
-    │   ├── assessments/                # Proposed
+    │   ├── assessments/                # Implemented
     │   │   └── routes.py
     │   ├── ai_interview/               # Proposed
     │   │   └── routes.py
@@ -102,7 +102,8 @@ The request should require at least one of `job_description` or
   submit/score completed attempts, record focus/tab-switch events, and view
   assessment history.
 - **Endpoint file:** `app/features/assessments/routes.py`
-- **Proposed endpoints:**
+- **Service file:** `app/features/assessments/service.py`
+- **Endpoints:**
 
 | Method | Endpoint | Purpose |
 |---|---|---|
