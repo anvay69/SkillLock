@@ -1,0 +1,26 @@
+{
+  "assessments": [
+    {
+      "title": "Technical skills",
+      "description": "A place for your next skills check.",
+      "label": "COMING SOON"
+    },
+    {
+      "title": "Problem solving",
+      "description": "Show how you approach a challenge.",
+      "label": "COMING SOON"
+    }
+  ],
+  "jobs": [
+    {
+      "title": "Your next opportunity",
+      "description": "Relevant opportunities will appear here.",
+      "label": "NO MATCHES YET"
+    },
+    {
+      "title": "Built around your skills",
+      "description": "Keep your profile up to date to get started.",
+      "label": "COMING SOON"
+    }
+  ]
+}

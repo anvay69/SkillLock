@@ -1,0 +1,66 @@
+{
+  "skills": [
+    "Python",
+    "FastAPI",
+    "JavaScript",
+    "React",
+    "TypeScript",
+    "SQL",
+    "SQLite",
+    "Docker",
+    "Git",
+    "CSS"
+  ],
+  "candidate": {
+    "name": "Alex Morgan",
+    "username": "alexmorgan",
+    "email": "alex@example.com",
+    "password": "SkillLockDemo2026!",
+    "profile": {
+      "bio": "Full-stack developer who enjoys building thoughtful, useful products.",
+      "github_url": "https://github.com/alexmorgan",
+      "linkedin_url": "https://www.linkedin.com/in/alexmorgan",
+      "profile_picture": "",
+      "resume": "",
+      "skills": ["Python", "FastAPI", "React", "SQL", "Docker"],
+      "projects": [
+        {
+          "title": "Community Garden",
+          "description": "A tool for neighbors to coordinate shared garden plots.",
+          "tech_stack": "React, FastAPI, SQLite",
+          "repository_url": "https://github.com/alexmorgan/community-garden",
+          "live_url": "https://garden.example.com"
+        }
+      ],
+      "experience": [
+        {
+          "job_title": "Software Engineer",
+          "company": "Northstar Labs",
+          "description": "Built and maintained customer-facing web applications.",
+          "start_date": "2022-06",
+          "end_date": ""
+        }
+      ],
+      "education": [
+        {
+          "institution": "State University",
+          "degree": "B.S.",
+          "field_of_study": "Computer Science",
+          "graduation_year": "2022",
+          "grade": "3.8 GPA"
+        }
+      ],
+      "certifications": [
+        {
+          "name": "AWS Certified Cloud Practitioner",
+          "issuing_organization": "Amazon Web Services",
+          "credential_url": "https://example.com/credentials/aws"
+        }
+      ]
+    }
+  },
+  "test_login": {
+    "email": "alex@example.com",
+    "password": "SkillLockDemo2026!"
+  }
+}
