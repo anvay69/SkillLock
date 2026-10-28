@@ -19,6 +19,7 @@ from app.services.users import (
     create_user,
     find_user_by_email,
     profile_response,
+    update_user_profile,
 )
 
 
@@ -79,3 +80,26 @@ def logout(
 @router.get("/me", response_model=ProfileResponse)
 def me(token: Annotated[str | None, Cookie(alias=SESSION_COOKIE)] = None) -> ProfileResponse:
     return profile_response(get_session_user(token))
+
+
+@router.put("/me", response_model=ProfileResponse)
+async def update_profile(
+    profile: Annotated[str, Form()],
+    profile_picture: Annotated[UploadFile | None, File()] = None,
+    token: Annotated[str | None, Cookie(alias=SESSION_COOKIE)] = None,
+) -> ProfileResponse:
+    user = get_session_user(token)
+    try:
+        data = ProfileData.model_validate_json(profile)
+    except (ValueError, ValidationError) as error:
+        raise HTTPException(status_code=400, detail="Please review your profile details.") from error
+    if not data.name.strip() or not data.username.strip():
+        raise HTTPException(status_code=400, detail="Name and username are required.")
+
+    if profile_picture and profile_picture.filename:
+        data.profile_picture = await save_upload(profile_picture)
+    try:
+        user = update_user_profile(user.id, data)
+    except ValueError as error:
+        raise HTTPException(status_code=409, detail=str(error)) from error
+    return profile_response(user)

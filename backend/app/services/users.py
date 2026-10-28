@@ -33,16 +33,21 @@ def create_user(profile: ProfileData, password: str) -> User:
 
 def update_user_profile(user_id: int, profile: ProfileData) -> User:
     data = profile.model_dump()
-    with database() as db:
-        db.execute(
-            "UPDATE users SET profile_json = ? WHERE id = ?",
-            (json.dumps(data), user_id),
-        )
-        db.executemany(
-            "INSERT OR IGNORE INTO skills (name) VALUES (?)",
-            [(skill.strip(),) for skill in profile.skills if skill.strip()],
-        )
-        row = db.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
+    try:
+        with database() as db:
+            db.execute(
+                """UPDATE users
+                   SET name = ?, username = ?, email = ?, profile_json = ?
+                   WHERE id = ?""",
+                (profile.name, profile.username, profile.email.lower(), json.dumps(data), user_id),
+            )
+            db.executemany(
+                "INSERT OR IGNORE INTO skills (name) VALUES (?)",
+                [(skill.strip(),) for skill in profile.skills if skill.strip()],
+            )
+            row = db.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
+    except sqlite3.IntegrityError as error:
+        raise ValueError("That email or username is already in use.") from error
     return User.from_row(row)
 
 

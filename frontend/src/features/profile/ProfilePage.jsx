@@ -2,6 +2,7 @@ import { useState } from "react";
 import { request } from "../../api/client";
 import { BrandHeader, PageFooter } from "../../components/SiteChrome";
 import ExtractionSummary from "./ExtractionSummary";
+import ProfileEditForm from "./ProfileEditForm";
 import ProfileSection from "./ProfileSection";
 
 function ListSection({ title, items, render }) {
@@ -28,6 +29,7 @@ export default function ProfilePage({
   const [resume, setResume] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [resumeExtraction, setResumeExtraction] = useState(null);
+  const [editing, setEditing] = useState(false);
 
   async function logout() {
     try {
@@ -83,8 +85,23 @@ export default function ProfilePage({
           </div>
           <span className="profile-status"><i /> PROFILE</span>
         </section>
+        {!editing && (
+          <div className="profile-edit-toggle">
+            <button className="secondary-button" onClick={() => setEditing(true)}>Edit profile</button>
+          </div>
+        )}
+        {editing && (
+          <ProfileEditForm
+            user={user}
+            onCancel={() => setEditing(false)}
+            onSave={(profile) => {
+              onProfileUpdate(profile, null);
+              setEditing(false);
+            }}
+          />
+        )}
         <div className="profile-content">
-          {user.bio && (
+          {!editing && user.bio && (
             <ProfileSection title="About">
               <p>{user.bio}</p>
               <div className="profile-links">
@@ -93,8 +110,8 @@ export default function ProfilePage({
               </div>
             </ProfileSection>
           )}
-          <ListSection title="Skills" items={user.skills} render={(skill) => <span className="tag">{skill}</span>} />
-          <ListSection title="Projects" items={user.projects} render={(project) => (
+          {!editing && <ListSection title="Skills" items={user.skills} render={(skill) => <span className="tag">{skill}</span>} />}
+          {!editing && <ListSection title="Projects" items={user.projects} render={(project) => (
             <>
               <h3>{project.title}</h3>
               {project.description && <p>{project.description}</p>}
@@ -104,27 +121,28 @@ export default function ProfilePage({
                 {project.live_url && <a href={project.live_url} target="_blank" rel="noreferrer">Live project ↗</a>}
               </div>
             </>
-          )} />
-          <ListSection title="Experience" items={user.experience} render={(item) => (
+          )} />}
+          {!editing && <ListSection title="Experience" items={user.experience} render={(item) => (
             <>
               <h3>{item.job_title}{item.company && <span> · {item.company}</span>}</h3>
               <p className="muted">{[item.start_date, item.end_date || (item.start_date && "Present")].filter(Boolean).join(" — ")}</p>
               {item.description && <p>{item.description}</p>}
             </>
-          )} />
-          <ListSection title="Education" items={user.education} render={(item) => (
+          )} />}
+          {!editing && <ListSection title="Education" items={user.education} render={(item) => (
             <>
               <h3>{item.degree} · {item.institution}</h3>
               <p>{[item.field_of_study, item.graduation_year, item.grade].filter(Boolean).join(" · ")}</p>
             </>
-          )} />
-          <ListSection title="Certifications" items={user.certifications} render={(item) => (
+          )} />}
+          {!editing && <ListSection title="Certifications" items={user.certifications} render={(item) => (
             <>
               <h3>{item.name}</h3>
               {item.issuing_organization && <p>{item.issuing_organization}</p>}
               {item.credential_url && <a href={item.credential_url} target="_blank" rel="noreferrer">View credential ↗</a>}
             </>
-          )} />
+          )} />}
+          {!editing && (
           <ProfileSection title="Resume">
             {user.resume && <a href={user.resume} target="_blank" rel="noreferrer" className="resume-link">View uploaded resume ↗</a>}
             <form className="resume-upload" onSubmit={uploadResume}>
@@ -141,12 +159,13 @@ export default function ProfilePage({
               </button>
             </form>
           </ProfileSection>
-          <ExtractionSummary extracted={resumeExtraction || extractedAdded} />
-          {!user.bio && !user.skills?.length && !user.projects?.length && (
+          )}
+          {!editing && <ExtractionSummary extracted={resumeExtraction || extractedAdded} />}
+          {!editing && !user.bio && !user.skills?.length && !user.projects?.length && (
             <p className="muted">Your profile is ready. Add details to tell your story.</p>
           )}
         </div>
-        <div className="profile-note"><span>✳</span> Profile editing is coming soon. This is your story, at a glance.</div>
+        {!editing && <div className="profile-note"><span>✳</span> Keep your professional story up to date.</div>}
         {error && <p className="error">{error}</p>}
       </div>
       <PageFooter />

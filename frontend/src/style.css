@@ -66,6 +66,14 @@ button{cursor:pointer}
 .profile-topbar{flex-shrink:0}
 .logout-button{border:1px solid var(--line);background:#fff;border-radius:4px;padding:8px 12px;font-size:11px;color:#58665d}.logout-button span{margin-left:7px;color:var(--green)}
 .profile-wrap{width:min(820px,100%);margin:42px auto 70px;flex:1}
+.profile-edit-toggle{display:flex;justify-content:flex-end;margin:15px 0 0}
+.profile-edit-toggle .secondary-button,.profile-edit-actions .secondary-button{border:1px solid #dfe7df;background:#fff;color:#486b53;border-radius:4px;padding:10px 13px;font-size:11px;font-weight:600}
+.profile-edit-toggle .secondary-button:hover,.profile-edit-actions .secondary-button:hover{border-color:#a9c3aa;background:#f6faf5}
+.profile-edit-form{margin:12px 0 25px;padding:18px 26px;background:#fff;border:1px solid #e8ede7;border-radius:6px}
+.profile-edit-form .form-section:first-child{border-top:0;padding-top:4px}
+.profile-edit-form .field>span+span{font-size:10px;color:#8b958f;font-weight:400}
+.profile-edit-actions{display:flex;justify-content:flex-end;gap:9px;padding-top:18px;border-top:1px solid var(--line)}
+.profile-edit-actions .primary-button{min-width:145px}
 .profile-cover{height:165px;border-radius:7px;background:#e8efe7;position:relative;overflow:hidden;display:flex;align-items:flex-start;padding:21px 24px;color:#6b8271;font-family:"DM Mono",monospace;font-size:9px;letter-spacing:.12em}
 .profile-cover:after{content:"";position:absolute;width:380px;height:380px;border:1px solid #d5e0d4;border-radius:50%;right:-2%;top:-155px;box-shadow:0 0 0 25px #e1eade,0 0 0 26px #d5e0d4,0 0 0 55px #e4ece2,0 0 0 56px #d5e0d4}
 .cover-mark{position:absolute;right:32px;bottom:10px;font-family:"Playfair Display",serif;font-size:95px;line-height:1;color:#d4e0d2;z-index:1}
