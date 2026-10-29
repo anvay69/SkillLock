@@ -23,6 +23,9 @@ export default function ProfilePage({
   extractedAdded,
   onProfileUpdate,
   onNavigateDashboard,
+  onJobMatching,
+  onJDAnalysis,
+  onResumeParser,
   onLogout,
 }) {
   const [error, setError] = useState("");
@@ -30,6 +33,7 @@ export default function ProfilePage({
   const [uploading, setUploading] = useState(false);
   const [resumeExtraction, setResumeExtraction] = useState(null);
   const [editing, setEditing] = useState(false);
+  const skills = user.skills || [];
 
   async function logout() {
     try {
@@ -65,31 +69,42 @@ export default function ProfilePage({
     <main className="profile-page">
       <BrandHeader>
         <div className="dashboard-nav">
-          <button className="profile-link" onClick={onNavigateDashboard}>Dashboard</button>
-          <button className="logout-button" onClick={logout}>Sign out <span>↗</span></button>
+          <button className="nav-link" onClick={onNavigateDashboard}>Dashboard</button>
+          <span className="nav-link active" aria-current="page">Profile</span>
+          <button className="nav-link" onClick={onJobMatching}>Job matching</button>
+          <button className="nav-link" onClick={onJDAnalysis}>JD analysis</button>
+          <button className="nav-link" onClick={onResumeParser}>Resume parser</button>
+          <button className="logout-button" onClick={logout}>Sign out</button>
         </div>
       </BrandHeader>
       <div className="profile-wrap">
-        <div className="profile-cover">
-          <span>YOUR PROFESSIONAL STORY</span>
-          <div className="cover-mark">S.</div>
-        </div>
         <section className="profile-hero">
-          {user.profile_picture
-            ? <img className="avatar" src={user.profile_picture} alt="" />
-            : <div className="avatar avatar-placeholder">{user.name?.slice(0, 1)}</div>}
-          <div className="profile-identity">
-            <p className="eyebrow">@{user.username}</p>
-            <h1>{user.name}</h1>
-            <p>{user.email}</p>
+          <div className="profile-identity-row">
+            {user.profile_picture
+              ? <img className="avatar" src={user.profile_picture} alt={`${user.name}'s profile`} />
+              : <div className="avatar avatar-placeholder" aria-hidden="true">{user.name?.slice(0, 1)}</div>}
+            <div className="profile-identity">
+              <p className="eyebrow">@{user.username}</p>
+              <h1>{user.name}</h1>
+              <p>{user.email}</p>
+            </div>
+            <div className="profile-actions">
+              <span className="profile-status">Candidate profile</span>
+              {!editing && (
+                <button className="secondary-button" onClick={() => setEditing(true)}>Edit profile</button>
+              )}
+            </div>
           </div>
-          <span className="profile-status"><i /> PROFILE</span>
+          {!editing && (user.bio || user.github_url || user.linkedin_url) && (
+            <div className="profile-introduction">
+              {user.bio && <p>{user.bio}</p>}
+              <div className="profile-links">
+                {user.github_url && <a href={user.github_url} target="_blank" rel="noreferrer">GitHub <span aria-hidden="true">↗</span></a>}
+                {user.linkedin_url && <a href={user.linkedin_url} target="_blank" rel="noreferrer">LinkedIn <span aria-hidden="true">↗</span></a>}
+              </div>
+            </div>
+          )}
         </section>
-        {!editing && (
-          <div className="profile-edit-toggle">
-            <button className="secondary-button" onClick={() => setEditing(true)}>Edit profile</button>
-          </div>
-        )}
         {editing && (
           <ProfileEditForm
             user={user}
@@ -101,21 +116,24 @@ export default function ProfilePage({
           />
         )}
         <div className="profile-content">
-          {!editing && user.bio && (
-            <ProfileSection title="About">
-              <p>{user.bio}</p>
-              <div className="profile-links">
-                {user.github_url && <a href={user.github_url} target="_blank" rel="noreferrer">GitHub ↗</a>}
-                {user.linkedin_url && <a href={user.linkedin_url} target="_blank" rel="noreferrer">LinkedIn ↗</a>}
+          {!editing && skills.length > 0 && (
+            <ProfileSection title="Skills">
+              <div className="profile-skills" aria-label="Skills">
+                {skills.map((skill) => <span className="tag" key={skill}>{skill}</span>)}
               </div>
             </ProfileSection>
           )}
-          {!editing && <ListSection title="Skills" items={user.skills} render={(skill) => <span className="tag">{skill}</span>} />}
           {!editing && <ListSection title="Projects" items={user.projects} render={(project) => (
             <>
               <h3>{project.title}</h3>
               {project.description && <p>{project.description}</p>}
-              {project.tech_stack && <p className="muted">Stack · {project.tech_stack}</p>}
+              {project.tech_stack && (
+                <div className="project-stack" aria-label="Technology stack">
+                  {project.tech_stack.split(/[,;|]/).map((technology) => technology.trim()).filter(Boolean).map((technology) => (
+                    <span className="tag tag-subtle" key={technology}>{technology}</span>
+                  ))}
+                </div>
+              )}
               <div className="profile-links">
                 {project.repository_url && <a href={project.repository_url} target="_blank" rel="noreferrer">Repository ↗</a>}
                 {project.live_url && <a href={project.live_url} target="_blank" rel="noreferrer">Live project ↗</a>}
@@ -154,6 +172,9 @@ export default function ProfilePage({
                   onChange={(event) => setResume(event.target.files[0] || null)}
                 />
               </label>
+              <p className="muted resume-privacy-note">
+                Only resume professional sections and your skills, projects, experience, education, and certifications are sent to Gemini. Personal/contact details and profile links are excluded.
+              </p>
               <button className="primary-button" disabled={!resume || uploading}>
                 {uploading ? "Reading resume..." : "Upload and update profile"} <span>→</span>
               </button>
@@ -161,7 +182,7 @@ export default function ProfilePage({
           </ProfileSection>
           )}
           {!editing && <ExtractionSummary extracted={resumeExtraction || extractedAdded} />}
-          {!editing && !user.bio && !user.skills?.length && !user.projects?.length && (
+          {!editing && !user.bio && !skills.length && !user.projects?.length && (
             <p className="muted">Your profile is ready. Add details to tell your story.</p>
           )}
         </div>

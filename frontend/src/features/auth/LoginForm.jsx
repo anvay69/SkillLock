@@ -38,7 +38,7 @@ export default function LoginForm({ onLogin }) {
       </form>
       <div className="demo-hint">
         <span className="demo-mark">i</span>
-        <p><strong>Just looking around?</strong><br />Try alex@example.com · SkillLockDemo2026!</p>
+        <p><strong>Just looking around?</strong><br />Try ananya@example.com · SkillLockDemo2026!</p>
       </div>
     </>
   );

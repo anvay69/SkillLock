@@ -3,8 +3,9 @@ import { request } from "./api/client";
 import AuthPage from "./features/auth/AuthPage";
 import AssessmentPage from "./features/assessments/AssessmentPage";
 import DashboardPage from "./features/dashboard/DashboardPage";
+import JDAnalysisPage from "./features/jd-analysis/JDAnalysisPage";
+import JobMatchingPage from "./features/job-matching/JobMatchingPage";
 import ProfilePage from "./features/profile/ProfilePage";
-import PersonalAssistant from "./components/PersonalAssistant";
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -17,7 +18,7 @@ export default function App() {
   useEffect(() => {
     request("/api/me")
       .then(setUser)
-      .catch(() => {})
+      .catch(() => { })
       .finally(() => setLoading(false));
   }, []);
 
@@ -49,32 +50,26 @@ export default function App() {
           setExtractedAdded(extracted);
         }}
         onNavigateDashboard={() => setPage("dashboard")}
-        onLogout={signOut}
-      />
-    );
-  } else if (page === "assessment" && assessmentId) {
-    pageContent = (
-      <AssessmentPage assessmentId={assessmentId} onDashboard={() => setPage("dashboard")} />
-    );
-  } else {
-    pageContent = (
-      <DashboardPage
-        user={user}
-        extractedAdded={extractedAdded}
-        onProfile={() => setPage("profile")}
-        onAssessment={(id) => {
-          setAssessmentId(id);
-          setPage("assessment");
-        }}
+        onJobMatching={() => setPage("job-matching")}
+        onJDAnalysis={() => setPage("jd-analysis")}
+        onResumeParser={() => setPage("resume-parser")}
         onLogout={signOut}
       />
     );
   }
-
+  if (page === "assessment" && assessmentId) {
+    return <AssessmentPage assessmentId={assessmentId} onDashboard={() => setPage("dashboard")} />;
+  }
   return (
-    <>
-      {pageContent}
-      {page !== "assessment" && <PersonalAssistant user={user} />}
-    </>
+    <DashboardPage
+      user={user}
+      extractedAdded={extractedAdded}
+      onProfile={() => setPage("profile")}
+      onAssessment={(id) => {
+        setAssessmentId(id);
+        setPage("assessment");
+      }}
+      onLogout={signOut}
+    />
   );
 }

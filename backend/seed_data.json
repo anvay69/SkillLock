@@ -9,7 +9,47 @@
     "SQLite",
     "Docker",
     "Git",
-    "CSS"
+    "CSS",
+    "C++",
+    "Java",
+    "Go",
+    "Distributed Systems",
+    "System Design",
+    "Kubernetes",
+    "AWS",
+    "PostgreSQL",
+    "Redis",
+    "Kafka",
+    "Linux",
+    "gRPC",
+    "Terraform",
+    "Statistics",
+    "Pandas",
+    "NumPy",
+    "Scikit-learn",
+    "Tableau",
+    "Power BI",
+    "Apache Spark",
+    "dbt",
+    "BigQuery",
+    "A/B Testing",
+    "Oracle Fusion Cloud Financials",
+    "Oracle E-Business Suite",
+    "Oracle PL/SQL",
+    "Oracle General Ledger",
+    "Oracle Payables",
+    "Oracle Receivables",
+    "Oracle Fixed Assets",
+    "OTBI",
+    "BI Publisher",
+    "FBDI",
+    "Oracle Integration Cloud",
+    "Financial Accounting",
+    "Month-End Close",
+    "PyTorch",
+    "TensorFlow",
+    "Machine Learning",
+    "TypeScript"
   ],
   "assessments": [
     {
@@ -374,55 +414,282 @@
     }
   ],
   "candidate": {
-    "name": "Alex Morgan",
-    "username": "alexmorgan",
-    "email": "alex@example.com",
+    "name": "Ananya Rao",
+    "username": "ananyarao",
+    "email": "ananya@example.com",
     "password": "SkillLockDemo2026!",
     "profile": {
-      "bio": "Full-stack developer who enjoys building thoughtful, useful products.",
-      "github_url": "https://github.com/alexmorgan",
-      "linkedin_url": "https://www.linkedin.com/in/alexmorgan",
+      "bio": "Systems-focused software engineer specializing in high-throughput services, distributed infrastructure, and performance-critical applications.",
+      "github_url": "",
+      "linkedin_url": "",
       "profile_picture": "",
       "resume": "",
-      "skills": ["Python", "FastAPI", "React", "SQL", "Docker"],
+      "skills": [
+        "C++", "Java", "Go", "Distributed Systems", "System Design",
+        "Kubernetes", "AWS", "PostgreSQL", "Redis", "Kafka", "Linux",
+        "REST APIs", "gRPC", "Terraform"
+      ],
       "projects": [
         {
-          "title": "Community Garden",
-          "description": "A tool for neighbors to coordinate shared garden plots.",
-          "tech_stack": "React, FastAPI, SQLite",
-          "repository_url": "https://github.com/alexmorgan/community-garden",
-          "live_url": "https://garden.example.com"
+          "title": "ShardKV",
+          "description": "Built a replicated, partitioned key-value store with consistent hashing, leader election, write-ahead logging, and recovery tests. Benchmarked throughput under node failure and rebalancing.",
+          "tech_stack": "Go, gRPC, Raft, Docker",
+          "repository_url": "",
+          "live_url": ""
+        },
+        {
+          "title": "Low-Latency Event Router",
+          "description": "Implemented a concurrent event router with bounded queues, backpressure, and configurable partitioning; profiled allocations and p99 latency under sustained load.",
+          "tech_stack": "C++, Linux, Kafka",
+          "repository_url": "",
+          "live_url": ""
         }
       ],
       "experience": [
         {
-          "job_title": "Software Engineer",
-          "company": "Northstar Labs",
-          "description": "Built and maintained customer-facing web applications.",
-          "start_date": "2022-06",
+          "job_title": "Senior Software Engineer",
+          "company": "Aster Systems",
+          "description": "Designed Go and Java services processing 1.8 billion events per day. Led a partitioning redesign that cut p99 write latency by 38%, introduced service-level objectives and distributed tracing, and coordinated staged Kubernetes deployments.",
+          "start_date": "2023-02",
           "end_date": ""
+        },
+        {
+          "job_title": "Software Engineer",
+          "company": "Aster Systems",
+          "description": "Built C++ data-plane components and resilient REST and gRPC services. Improved hot-path throughput by 31% through profiling, lock contention reduction, and memory-layout changes.",
+          "start_date": "2020-07",
+          "end_date": "2023-01"
         }
       ],
       "education": [
         {
-          "institution": "State University",
-          "degree": "B.S.",
+          "institution": "National Institute of Technology, Tiruchirappalli",
+          "degree": "B.Tech.",
           "field_of_study": "Computer Science",
-          "graduation_year": "2022",
-          "grade": "3.8 GPA"
+          "graduation_year": "2020",
+          "grade": "8.9/10"
         }
       ],
       "certifications": [
         {
-          "name": "AWS Certified Cloud Practitioner",
-          "issuing_organization": "Amazon Web Services",
-          "credential_url": "https://example.com/credentials/aws"
+          "name": "Certified Kubernetes Administrator",
+          "issuing_organization": "Cloud Native Computing Foundation",
+          "credential_url": ""
         }
       ]
     }
   },
+  "demo_candidates": [
+    {
+      "name": "Karthik Subramaniam",
+      "username": "karthiksubramaniam",
+      "email": "karthik@example.com",
+      "password": "SkillLockDemo2026!",
+      "profile": {
+        "bio": "Data scientist and analyst who turns ambiguous business questions into reliable metrics, experiments, and decision-ready insights.",
+        "github_url": "",
+        "linkedin_url": "",
+        "profile_picture": "",
+        "resume": "",
+        "skills": [
+          "Python", "SQL", "Statistics", "Pandas", "NumPy", "Scikit-learn",
+          "Tableau", "Power BI", "Apache Spark", "dbt", "BigQuery", "A/B Testing"
+        ],
+        "projects": [
+          {
+            "title": "Subscription Churn and Retention Model",
+            "description": "Built a leakage-checked churn pipeline, calibrated model probabilities, and translated cohort-level drivers into targeted retention experiments. Evaluated lift against a stratified holdout.",
+            "tech_stack": "Python, Pandas, Scikit-learn, BigQuery",
+            "repository_url": "",
+            "live_url": ""
+          },
+          {
+            "title": "Product Metrics Warehouse",
+            "description": "Created tested dbt models for acquisition, activation, and revenue metrics; reconciled event data with billing records and published stakeholder dashboards with documented metric definitions.",
+            "tech_stack": "SQL, dbt, BigQuery, Tableau",
+            "repository_url": "",
+            "live_url": ""
+          }
+        ],
+        "experience": [
+          {
+            "job_title": "Data Scientist",
+            "company": "MetricSpring",
+            "description": "Designed randomized experiments and causal analyses for product launches. Built forecasting and propensity models used by marketing and product teams, and presented uncertainty and trade-offs to nontechnical stakeholders.",
+            "start_date": "2023-01",
+            "end_date": ""
+          },
+          {
+            "job_title": "Data Analyst",
+            "company": "MetricSpring",
+            "description": "Owned SQL reporting for product and finance teams, automated recurring analysis, and rebuilt funnel definitions to resolve inconsistent conversion reporting across dashboards.",
+            "start_date": "2021-06",
+            "end_date": "2022-12"
+          }
+        ],
+        "education": [
+          {
+            "institution": "University of Hyderabad",
+            "degree": "M.Sc.",
+            "field_of_study": "Statistics",
+            "graduation_year": "2021",
+            "grade": "8.7/10"
+          },
+          {
+            "institution": "Loyola College",
+            "degree": "B.Sc.",
+            "field_of_study": "Mathematics",
+            "graduation_year": "2019",
+            "grade": "First Class"
+          }
+        ],
+        "certifications": [
+          {
+            "name": "Google Advanced Data Analytics Professional Certificate",
+            "issuing_organization": "Google",
+            "credential_url": ""
+          }
+        ]
+      }
+    },
+    {
+      "name": "Priya Menon",
+      "username": "priyamenon",
+      "email": "priya@example.com",
+      "password": "SkillLockDemo2026!",
+      "profile": {
+        "bio": "Oracle Financial Services implementation specialist focused on finance transformation, controls, integrations, and reliable month-end operations.",
+        "github_url": "",
+        "linkedin_url": "",
+        "profile_picture": "",
+        "resume": "",
+        "skills": [
+          "Oracle Fusion Cloud Financials", "Oracle E-Business Suite",
+          "Oracle PL/SQL", "Oracle General Ledger", "Oracle Payables",
+          "Oracle Receivables", "Oracle Fixed Assets", "OTBI", "BI Publisher",
+          "FBDI", "Oracle Integration Cloud", "Financial Accounting",
+          "Month-End Close"
+        ],
+        "projects": [
+          {
+            "title": "Multi-Entity Oracle Fusion Financials Rollout",
+            "description": "Configured General Ledger, Payables, Receivables, and Fixed Assets for a six-entity rollout. Designed chart-of-accounts mappings, approval controls, reconciliation procedures, and a phased cutover plan.",
+            "tech_stack": "Oracle Fusion Cloud Financials, FBDI, OTBI",
+            "repository_url": "",
+            "live_url": ""
+          },
+          {
+            "title": "Invoice Automation and Close Controls",
+            "description": "Integrated supplier invoice feeds, added validation and exception handling, and produced BI Publisher close packs. Reduced manual invoice rework while preserving audit trails and segregation of duties.",
+            "tech_stack": "Oracle E-Business Suite, Oracle Integration Cloud, BI Publisher",
+            "repository_url": "",
+            "live_url": ""
+          }
+        ],
+        "experience": [
+          {
+            "job_title": "Oracle Financials Lead Consultant",
+            "company": "LedgerBridge Consulting",
+            "description": "Led Oracle Fusion Cloud Financials delivery for enterprise clients, from fit-gap workshops through configuration, data conversion, UAT, go-live, and hypercare. Owned finance stakeholder alignment and cutover readiness.",
+            "start_date": "2022-04",
+            "end_date": ""
+          },
+          {
+            "job_title": "Oracle EBS Functional Consultant",
+            "company": "LedgerBridge Consulting",
+            "description": "Supported General Ledger, Payables, and Receivables operations; authored PL/SQL extracts and reconciliations, maintained month-end controls, and resolved production issues with finance teams.",
+            "start_date": "2019-08",
+            "end_date": "2022-03"
+          }
+        ],
+        "education": [
+          {
+            "institution": "Christ University",
+            "degree": "B.Com.",
+            "field_of_study": "Accounting and Finance",
+            "graduation_year": "2019",
+            "grade": "8.6/10"
+          }
+        ],
+        "certifications": [
+          {
+            "name": "Oracle Financials Cloud: General Ledger 2024 Implementation Professional",
+            "issuing_organization": "Oracle",
+            "credential_url": ""
+          }
+        ]
+      }
+    },
+    {
+      "name": "Rohan Verma",
+      "username": "rohanverma",
+      "email": "rohan@example.com",
+      "password": "SkillLockDemo2026!",
+      "profile": {
+        "bio": "Broad-based software engineer with depth in distributed systems and machine learning, plus hands-on product, infrastructure, and analytics experience.",
+        "github_url": "",
+        "linkedin_url": "",
+        "profile_picture": "",
+        "resume": "",
+        "skills": [
+          "C++", "Java", "Go", "Python", "React", "TypeScript", "PostgreSQL",
+          "Kafka", "Kubernetes", "AWS", "Distributed Systems", "System Design",
+          "PyTorch", "TensorFlow", "Machine Learning", "Apache Spark",
+          "Linux", "gRPC", "Terraform"
+        ],
+        "projects": [
+          {
+            "title": "Real-Time Recommendations Platform",
+            "description": "Built a feature pipeline and online inference service for personalized recommendations, with offline evaluation, model monitoring, and a controlled experiment measuring engagement impact.",
+            "tech_stack": "Python, PyTorch, Kafka, Kubernetes, AWS",
+            "repository_url": "",
+            "live_url": ""
+          },
+          {
+            "title": "Collaborative Incident Console",
+            "description": "Delivered a full-stack incident console with live event updates, searchable service history, and role-based workflows; instrumented backend latency and frontend interaction metrics.",
+            "tech_stack": "Java, React, TypeScript, PostgreSQL, gRPC",
+            "repository_url": "",
+            "live_url": ""
+          }
+        ],
+        "experience": [
+          {
+            "job_title": "Software Engineer",
+            "company": "Northstar Technologies",
+            "description": "Owned distributed Java and Go services for a global product, led a migration to event-driven processing, and improved availability through load testing, fault injection, and automated rollback safeguards.",
+            "start_date": "2022-05",
+            "end_date": ""
+          },
+          {
+            "job_title": "Software Engineering Intern",
+            "company": "Northstar Technologies",
+            "description": "Prototyped ranking models and production APIs, contributed reusable React components, and created performance dashboards for latency and service health.",
+            "start_date": "2021-05",
+            "end_date": "2021-12"
+          }
+        ],
+        "education": [
+          {
+            "institution": "Indian Institute of Technology, Kanpur",
+            "degree": "B.Tech.",
+            "field_of_study": "Computer Science and Engineering",
+            "graduation_year": "2022",
+            "grade": "9.1/10"
+          }
+        ],
+        "certifications": [
+          {
+            "name": "AWS Certified Solutions Architect – Associate",
+            "issuing_organization": "Amazon Web Services",
+            "credential_url": ""
+          }
+        ]
+      }
+    }
+  ],
   "test_login": {
-    "email": "alex@example.com",
+    "email": "ananya@example.com",
     "password": "SkillLockDemo2026!"
   },
   "jobs": [

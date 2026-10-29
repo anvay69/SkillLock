@@ -1,3 +1,5 @@
+from typing import Literal
+
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -51,6 +53,9 @@ class ProfileData(BaseModel):
     profile_picture: str = ""
     resume: str = ""
     skills: list[str] = Field(default_factory=list)
+    learning_progress: dict[str, Literal["not_started", "learning", "completed"]] = Field(
+        default_factory=dict
+    )
     projects: list[Project] = Field(default_factory=list)
     experience: list[Experience] = Field(default_factory=list)
     education: list[Education] = Field(default_factory=list)

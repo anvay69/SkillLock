@@ -27,6 +27,9 @@ function ProfileBasics({ profile, set, uploads, onUploads }) {
           <input type="file" accept=".pdf,.docx" onChange={(event) => onUploads({ ...uploads, resume: event.target.files[0] || null })} />
         </label>
       </div>
+      <p className="muted resume-privacy-note">
+        Resume extraction sends only professional sections and profile details (skills, projects, experience, education, and certifications) to Gemini. Personal/contact details and profile links are excluded.
+      </p>
     </Section>
   );
 }
