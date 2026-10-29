@@ -8,9 +8,8 @@ code stays in place. Each feature below owns one folder directly under
 `app/features/`; feature-specific route handlers and services stay together in
 that folder.
 
-The resume feature has been moved into its feature folder and remains active.
-The other four feature folders and their APIs below are proposed only; they
-have not been implemented.
+The resume, assessments, and job-matching features are implemented and active.
+The AI interview and stored matching-jobs features below are proposed only.
 
 ## Proposed Backend Tree
 
@@ -31,8 +30,9 @@ backend/
     │   │   ├── __init__.py
     │   │   ├── routes.py
     │   │   └── service.py
-    │   ├── job_matching/               # Proposed
-    │   │   └── routes.py
+    │   ├── job_matching/               # Implemented
+    │   │   ├── routes.py
+    │   │   └── service.py
     │   ├── assessments/                # Implemented
     │   │   └── routes.py
     │   ├── ai_interview/               # Proposed
@@ -42,10 +42,10 @@ backend/
     ├── models/                         # Shared database models
     ├── schemas/                        # Shared and feature request/response schemas
     ├── services/                       # Shared auth, user, and generic upload helpers
-    └── main.py                         # Registers existing routers and resume router
+    └── main.py                         # Registers active feature routers
 ```
 
-For the four proposed features, add a feature-specific `service.py` in the same
+For proposed features, add a feature-specific `service.py` in the same
 folder only when implementing its business logic. Keep feature-specific
 request/response schemas in the existing `app/schemas/` convention unless they
 become large enough to justify colocating them; do not add another nested
@@ -74,6 +74,9 @@ path and response shape are preserved.
 
 ## 2. JD and LinkedIn Job Matching
 
+**Status: Implemented.** The authenticated frontend analysis page calls these
+routes. LinkedIn URLs are validated, but page content is not fetched.
+
 - **Folder name:** `job_matching`
 - **Folder location:** `app/features/job_matching/` (relative to `backend/`)
 - **Included functionality:** Accept pasted job-description text or a
@@ -84,11 +87,12 @@ path and response shape are preserved.
   integration; callers can provide the listing text when URL content is not
   publicly available.
 - **Endpoint file:** `app/features/job_matching/routes.py`
-- **Proposed endpoint:**
+- **Endpoints:**
 
 | Method | Endpoint | Purpose |
 |---|---|---|
 | `POST` | `/api/job-matching/analyze` | Analyze a supplied job description and/or LinkedIn listing URL against the current candidate's profile; return matched skills, missing skills, readiness feedback, and actionable suggestions. |
+| `PUT` | `/api/job-matching/learning-progress` | Persist the candidate's status for a recognized roadmap skill. |
 
 The request should require at least one of `job_description` or
 `linkedin_url`. The response is an analysis result, not a saved job listing.

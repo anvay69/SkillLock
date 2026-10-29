@@ -23,6 +23,7 @@ export default function ProfilePage({
   extractedAdded,
   onProfileUpdate,
   onNavigateDashboard,
+  onJobMatching,
   onLogout,
 }) {
   const [error, setError] = useState("");
@@ -68,6 +69,7 @@ export default function ProfilePage({
         <div className="dashboard-nav">
           <button className="nav-link" onClick={onNavigateDashboard}>Dashboard</button>
           <span className="nav-link active" aria-current="page">Profile</span>
+          <button className="nav-link" onClick={onJobMatching}>Job matching</button>
           <button className="logout-button" onClick={logout}>Sign out</button>
         </div>
       </BrandHeader>

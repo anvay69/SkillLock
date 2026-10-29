@@ -2,25 +2,15 @@ import { useEffect, useState } from "react";
 import { request } from "../../api/client";
 import { BrandHeader, PageFooter } from "../../components/SiteChrome";
 import ExtractionSummary from "../profile/ExtractionSummary";
-import placeholders from "./dashboard_placeholders.json";
 
-function PlaceholderCards({ items }) {
-  return (
-    <div className="opportunity-empty-state">
-      {items.map((item) => (
-        <article className="opportunity-empty-item" key={item.title}>
-          <span className="placeholder-label">{item.label}</span>
-          <div>
-            <h3>{item.title}</h3>
-            <p>{item.description}</p>
-          </div>
-        </article>
-      ))}
-    </div>
-  );
-}
-
-export default function DashboardPage({ user, extractedAdded, onProfile, onLogout, onAssessment }) {
+export default function DashboardPage({
+  user,
+  extractedAdded,
+  onProfile,
+  onLogout,
+  onAssessment,
+  onJobMatching,
+}) {
   const [error, setError] = useState("");
   const [assessments, setAssessments] = useState([]);
   const [history, setHistory] = useState([]);
@@ -54,6 +44,7 @@ export default function DashboardPage({ user, extractedAdded, onProfile, onLogou
           <span className="nav-link active" aria-current="page">Dashboard</span>
           <button className="nav-link" onClick={onProfile}>Profile</button>
           <a className="nav-link" href="#available-assessments">Assessments</a>
+          <button className="nav-link" onClick={onJobMatching}>Job matching</button>
           <button className="logout-button" onClick={logout}>Sign out</button>
         </div>
       </BrandHeader>
@@ -109,11 +100,14 @@ export default function DashboardPage({ user, extractedAdded, onProfile, onLogou
             </div>
           ) : <p className="muted">Your assessment attempts will appear here.</p>}
         </section>
-        <section className="dashboard-section">
+        <section className="dashboard-section" id="job-matching">
           <div className="dashboard-section-heading">
             <div><p className="eyebrow">OPPORTUNITIES FOR YOU</p><h2>Jobs Matched to You</h2></div>
           </div>
-          <PlaceholderCards items={placeholders.jobs} />
+          <div className="job-matching-promo">
+            <p>Compare a job description with your profile skills, see recognized requirements, and get a learning roadmap for gaps.</p>
+            <button className="secondary-button" onClick={onJobMatching}>Analyze a job description <span aria-hidden="true">→</span></button>
+          </div>
         </section>
       </div>
       <PageFooter />

@@ -123,6 +123,18 @@ class ResumeUploadApiTests(unittest.TestCase):
             )
         self.assertEqual(response.status_code, 401, response.text)
 
+    def test_job_matching_learning_progress_is_persisted_in_candidate_profile(self) -> None:
+        response = self.client.put(
+            "/api/job-matching/learning-progress",
+            json={"skill": "Docker", "status": "learning"},
+        )
+        self.assertEqual(response.status_code, 200, response.text)
+        self.assertEqual(response.json()["learning_progress"]["Docker"], "learning")
+
+        profile = self.client.get("/api/me")
+        self.assertEqual(profile.status_code, 200, profile.text)
+        self.assertEqual(profile.json()["learning_progress"]["Docker"], "learning")
+
     def test_pdf_is_saved_extracted_merged_and_used_by_job_matching(self) -> None:
         before = self.client.get("/api/me").json()
         content = make_text_pdf(

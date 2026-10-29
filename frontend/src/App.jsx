@@ -3,6 +3,7 @@ import { request } from "./api/client";
 import AuthPage from "./features/auth/AuthPage";
 import AssessmentPage from "./features/assessments/AssessmentPage";
 import DashboardPage from "./features/dashboard/DashboardPage";
+import JobMatchingPage from "./features/job-matching/JobMatchingPage";
 import ProfilePage from "./features/profile/ProfilePage";
 
 export default function App() {
@@ -46,6 +47,7 @@ export default function App() {
           setExtractedAdded(extracted);
         }}
         onNavigateDashboard={() => setPage("dashboard")}
+        onJobMatching={() => setPage("job-matching")}
         onLogout={signOut}
       />
     );
@@ -53,11 +55,21 @@ export default function App() {
   if (page === "assessment" && assessmentId) {
     return <AssessmentPage assessmentId={assessmentId} onDashboard={() => setPage("dashboard")} />;
   }
+  if (page === "job-matching") {
+    return (
+      <JobMatchingPage
+        onDashboard={() => setPage("dashboard")}
+        onProfile={() => setPage("profile")}
+        onLogout={signOut}
+      />
+    );
+  }
   return (
     <DashboardPage
       user={user}
       extractedAdded={extractedAdded}
       onProfile={() => setPage("profile")}
+      onJobMatching={() => setPage("job-matching")}
       onAssessment={(id) => {
         setAssessmentId(id);
         setPage("assessment");
