@@ -6,6 +6,7 @@ import DashboardPage from "./features/dashboard/DashboardPage";
 import JDAnalysisPage from "./features/jd-analysis/JDAnalysisPage";
 import JobMatchingPage from "./features/job-matching/JobMatchingPage";
 import ProfilePage from "./features/profile/ProfilePage";
+import ResumeParserPage from "./features/resume-parser/ResumeParserPage";
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -60,11 +61,47 @@ export default function App() {
   if (page === "assessment" && assessmentId) {
     return <AssessmentPage assessmentId={assessmentId} onDashboard={() => setPage("dashboard")} />;
   }
+  if (page === "job-matching") {
+    return (
+      <JobMatchingPage
+        onDashboard={() => setPage("dashboard")}
+        onProfile={() => setPage("profile")}
+        onJDAnalysis={() => setPage("jd-analysis")}
+        onResumeParser={() => setPage("resume-parser")}
+        onLogout={signOut}
+      />
+    );
+  }
+  if (page === "jd-analysis") {
+    return (
+      <JDAnalysisPage
+        onDashboard={() => setPage("dashboard")}
+        onProfile={() => setPage("profile")}
+        onJobMatching={() => setPage("job-matching")}
+        onResumeParser={() => setPage("resume-parser")}
+        onLogout={signOut}
+      />
+    );
+  }
+  if (page === "resume-parser") {
+    return (
+      <ResumeParserPage
+        onDashboard={() => setPage("dashboard")}
+        onProfile={() => setPage("profile")}
+        onJobMatching={() => setPage("job-matching")}
+        onJDAnalysis={() => setPage("jd-analysis")}
+        onLogout={signOut}
+      />
+    );
+  }
   return (
     <DashboardPage
       user={user}
       extractedAdded={extractedAdded}
       onProfile={() => setPage("profile")}
+      onJobMatching={() => setPage("job-matching")}
+      onJDAnalysis={() => setPage("jd-analysis")}
+      onResumeParser={() => setPage("resume-parser")}
       onAssessment={(id) => {
         setAssessmentId(id);
         setPage("assessment");
