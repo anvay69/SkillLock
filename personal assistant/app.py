@@ -15,7 +15,7 @@ from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 CURRENT_DIR = Path(__file__).resolve().parent
-DEFAULT_MODEL = "gemini-2.5-flash"
+DEFAULT_MODEL = "gemini-3.8-flash"
 
 
 def call_gemini(message: str, api_key: str, model: str = DEFAULT_MODEL, history: list = None) -> str:

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 
 export default function PersonalAssistant({ user }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [apiKey, setApiKey] = useState(() => localStorage.getItem("gemini_api_key") || "");
+  const [apiKey, setApiKey] = useState(() => (localStorage.getItem("gemini_api_key") || "").trim());
   const [showSettings, setShowSettings] = useState(false);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
@@ -84,7 +84,7 @@ Answer user questions concisely, warmly, and helpfully. Keep answers to 2-4 sent
       ];
 
       const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${apiKey}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
