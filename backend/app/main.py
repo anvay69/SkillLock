@@ -6,6 +6,8 @@ from app.api.routes import auth, skills
 from app.core.config import UPLOADS
 from app.core.database import initialize_database
 from app.features.assessments.routes import router as assessments_router
+from app.features.job_matching.routes import router as job_matching_router
+from app.features.matching_jobs.routes import router as matching_jobs_router
 from app.features.resume.routes import router as resume_router
 
 
@@ -23,6 +25,8 @@ app.include_router(auth.router)
 app.include_router(skills.router)
 app.include_router(resume_router)
 app.include_router(assessments_router)
+app.include_router(job_matching_router)
+app.include_router(matching_jobs_router)
 
 
 @app.on_event("startup")
