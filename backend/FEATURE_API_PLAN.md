@@ -75,27 +75,43 @@ path and response shape are preserved.
 ## 2. JD and LinkedIn Job Matching
 
 **Status: Implemented.** The authenticated frontend analysis page calls these
-routes. LinkedIn URLs are validated, but page content is not fetched.
+routes. Public LinkedIn job and post pages, including supported `lnkd.in/p/`
+links, are fetched anonymously with a bounded response size and timeout.
+Requests do not include login cookies and follow only a limited number of
+redirects to validated LinkedIn destinations. If LinkedIn does not expose a
+readable description, the caller can paste the job text instead. When a public
+listing is fetched, its visible text and any pasted description are sent to Gemini for structured
+job metadata and skill extraction. Pasted-description-only requests also use
+Gemini. When both sources are provided, Gemini checks that they describe the
+same job opening and combines their requirements. Matching is permissive: a few
+meaningful overlapping job terms are enough, while unrelated roles with no
+meaningful overlap produce a clear validation error. Candidate profile
+comparison stays local; candidate profile details are not sent to Gemini.
 
 - **Folder name:** `job_matching`
 - **Folder location:** `app/features/job_matching/` (relative to `backend/`)
-- **Included functionality:** Accept pasted job-description text or a
-  candidate-provided LinkedIn listing URL and compare its stated requirements
-  with the authenticated candidate's saved profile and extracted resume
+- **Included functionality:** Accept an optional pasted job-description text
+  and/or a public LinkedIn listing URL, extract its public job description and
+  compare stated requirements with the authenticated candidate's saved profile
+  and extracted resume
   details. Return matched skills, skill gaps, readiness feedback, and
-  suggestions. Do not fetch protected LinkedIn content or require a LinkedIn
-  integration; callers can provide the listing text when URL content is not
-  publicly available.
+  suggestions. Do not sign in or bypass LinkedIn access restrictions. Follow
+  only redirects that pass the LinkedIn host and path checks. Callers can provide
+  the listing text when URL content is not publicly available. Gemini API
+  configuration is read from `GEMINI_API_KEY`
+  and `GEMINI_MODEL` in `backend/.env`; every request with at least one source
+  requires Gemini.
 - **Endpoint file:** `app/features/job_matching/routes.py`
 - **Endpoints:**
 
 | Method | Endpoint | Purpose |
 |---|---|---|
-| `POST` | `/api/job-matching/analyze` | Analyze a supplied job description and/or LinkedIn listing URL against the current candidate's profile; return matched skills, missing skills, readiness feedback, and actionable suggestions. |
+| `POST` | `/api/job-matching/analyze` | Analyze a supplied job description and/or a publicly readable LinkedIn job listing against the current candidate's profile; return listing metadata, matched skills, missing skills, readiness feedback, and actionable suggestions. |
 | `PUT` | `/api/job-matching/learning-progress` | Persist the candidate's status for a recognized roadmap skill. |
 
-The request should require at least one of `job_description` or
-`linkedin_url`. The response is an analysis result, not a saved job listing.
+The request requires at least one of `job_description` or `linkedin_url`.
+When both are supplied, both texts are analyzed. The response is an analysis
+result, not a saved job listing.
 
 ## 3. Assessments
 

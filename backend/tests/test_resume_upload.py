@@ -12,6 +12,8 @@ from fastapi.testclient import TestClient
 
 from app.core import database
 from app.core.config import SEED_FILE, UPLOADS
+from app.features.job_matching import routes as job_matching_routes
+from app.features.job_matching.gemini import GeminiJobRequirements
 from app.features.resume import service as resume_service
 from app.main import app
 from app.services import uploads as upload_service
@@ -135,6 +137,170 @@ class ResumeUploadApiTests(unittest.TestCase):
         self.assertEqual(profile.status_code, 200, profile.text)
         self.assertEqual(profile.json()["learning_progress"]["Docker"], "learning")
 
+    def test_job_matching_uses_fetched_linkedin_description_without_manual_text(self) -> None:
+        listing = {
+            "job_title": "Backend Developer",
+            "company": "Example Co",
+            "job_description": "Python is required. TypeScript is preferred.",
+            "page_text": "Backend Developer at Example Co: Python is required. TypeScript is preferred.",
+        }
+        extracted = GeminiJobRequirements(
+            job_title="Backend Developer",
+            company="Example Co",
+            job_summary="Build API services.",
+            required_skills=["Python"],
+            preferred_skills=["TypeScript"],
+        )
+        with (
+            patch.object(job_matching_routes, "fetch_linkedin_job", return_value=listing),
+            patch.object(job_matching_routes, "extract_job_requirements", return_value=extracted),
+        ):
+            response = self.client.post(
+                "/api/job-matching/analyze",
+                json={"linkedin_url": "https://www.linkedin.com/jobs/view/123456"},
+            )
+
+        self.assertEqual(response.status_code, 200, response.text)
+        body = response.json()
+        self.assertEqual(body["source"], "linkedin_listing")
+        self.assertEqual(body["job_title"], "Backend Developer")
+        self.assertEqual(body["company"], "Example Co")
+        self.assertEqual(body["job_summary"], "Build API services.")
+        self.assertIn("Python", body["matched_skills"])
+        self.assertIn("TypeScript", body["missing_preferred_skills"])
+
+    def test_job_matching_sends_pasted_description_to_gemini(self) -> None:
+        extracted = GeminiJobRequirements(
+            job_title="Rust Developer",
+            company="Example Co",
+            job_summary="Build Rust services.",
+            required_skills=["Rust"],
+            preferred_skills=[],
+        )
+        with patch.object(
+            job_matching_routes,
+            "extract_job_requirements",
+            return_value=extracted,
+        ) as extract:
+            response = self.client.post(
+                "/api/job-matching/analyze",
+                json={"job_description": "Rust experience is required."},
+            )
+
+        self.assertEqual(response.status_code, 200, response.text)
+        self.assertEqual(response.json()["source"], "pasted_description")
+        self.assertEqual(response.json()["job_title"], "Rust Developer")
+        self.assertEqual(extract.call_args.args[0], "")
+        self.assertEqual(extract.call_args.args[2], "Rust experience is required.")
+
+    def test_job_matching_combines_linkedin_and_pasted_description_in_gemini(self) -> None:
+        listing = {
+            "job_title": "Backend Developer",
+            "company": "Example Co",
+            "job_description": "Python is required.",
+            "page_text": "Backend Developer at Example Co: Python is required.",
+        }
+        extracted = GeminiJobRequirements(
+            job_title="Backend Developer",
+            company="Example Co",
+            job_summary="Build API services.",
+            required_skills=["Python", "Docker"],
+            preferred_skills=[],
+        )
+        with (
+            patch.object(job_matching_routes, "fetch_linkedin_job", return_value=listing),
+            patch.object(
+                job_matching_routes,
+                "extract_job_requirements",
+                return_value=extracted,
+            ) as extract,
+        ):
+            response = self.client.post(
+                "/api/job-matching/analyze",
+                json={
+                    "linkedin_url": "https://www.linkedin.com/jobs/view/123456",
+                    "job_description": "Python and Docker are required.",
+                },
+            )
+
+        self.assertEqual(response.status_code, 200, response.text)
+        self.assertEqual(response.json()["source"], "linkedin_listing_and_description")
+        self.assertEqual(extract.call_args.args[0], listing["page_text"])
+        self.assertEqual(extract.call_args.args[2], "Python and Docker are required.")
+
+    def test_job_matching_returns_clear_error_when_sources_do_not_match(self) -> None:
+        listing = {
+            "job_title": "Backend Developer",
+            "company": "Example Co",
+            "job_description": "Python is required.",
+            "page_text": "Backend Developer at Example Co: Python is required.",
+        }
+        with (
+            patch.object(job_matching_routes, "fetch_linkedin_job", return_value=listing),
+            patch.object(
+                job_matching_routes,
+                "extract_job_requirements",
+                side_effect=job_matching_routes.JobDescriptionMismatchError(
+                    "The job description and LinkedIn job do not match. "
+                    "Please check that they refer to the same job."
+                ),
+            ),
+            patch.object(job_matching_routes, "analyze_job_requirements") as compare,
+        ):
+            response = self.client.post(
+                "/api/job-matching/analyze",
+                json={
+                    "linkedin_url": "https://www.linkedin.com/jobs/view/123456",
+                    "job_description": "Social media manager role at Another Co.",
+                },
+            )
+
+        self.assertEqual(response.status_code, 422, response.text)
+        self.assertIn("job description and LinkedIn job do not match", response.json()["detail"])
+        compare.assert_not_called()
+
+    def test_job_matching_does_not_call_gemini_without_any_source(self) -> None:
+        with patch.object(job_matching_routes, "extract_job_requirements") as extract:
+            response = self.client.post("/api/job-matching/analyze", json={})
+        self.assertEqual(response.status_code, 422, response.text)
+        extract.assert_not_called()
+
+    def test_job_matching_uses_supplied_description_when_linkedin_is_unavailable(self) -> None:
+        extracted = GeminiJobRequirements(
+            job_title="Backend Developer",
+            company="",
+            job_summary="Build API services.",
+            required_skills=["Python"],
+            preferred_skills=[],
+        )
+        with (
+            patch.object(
+                job_matching_routes,
+                "fetch_linkedin_job",
+                side_effect=job_matching_routes.LinkedInFetchError("The listing is not public."),
+            ),
+            patch.object(
+                job_matching_routes,
+                "extract_job_requirements",
+                return_value=extracted,
+            ) as extract,
+        ):
+            response = self.client.post(
+                "/api/job-matching/analyze",
+                json={
+                    "linkedin_url": "https://www.linkedin.com/jobs/view/123456",
+                    "job_description": "Python is required.",
+                },
+            )
+
+        self.assertEqual(response.status_code, 200, response.text)
+        body = response.json()
+        self.assertEqual(body["source"], "pasted_description")
+        self.assertIn("not public", body["source_warning"])
+        self.assertIn("Python", body["matched_skills"])
+        self.assertEqual(extract.call_args.args[0], "")
+        self.assertEqual(extract.call_args.args[2], "Python is required.")
+
     def test_pdf_is_saved_extracted_merged_and_used_by_job_matching(self) -> None:
         before = self.client.get("/api/me").json()
         content = make_text_pdf(
@@ -231,10 +397,22 @@ class ResumeUploadApiTests(unittest.TestCase):
         self.assertEqual(edited.status_code, 200, edited.text)
         self.assertEqual(edited.json()["resume"], profile["resume"])
 
-        match = self.client.post(
-            "/api/job-matching/analyze",
-            json={"job_description": "Rust experience is required."},
+        rust_extraction = GeminiJobRequirements(
+            job_title="",
+            company="",
+            job_summary="",
+            required_skills=["Rust"],
+            preferred_skills=[],
         )
+        with patch.object(
+            job_matching_routes,
+            "extract_job_requirements",
+            return_value=rust_extraction,
+        ):
+            match = self.client.post(
+                "/api/job-matching/analyze",
+                json={"job_description": "Rust experience is required."},
+            )
         self.assertEqual(match.status_code, 200, match.text)
         self.assertIn("Rust", match.json()["matched_skills"])
 

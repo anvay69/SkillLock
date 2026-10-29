@@ -1,3 +1,4 @@
+import re
 from typing import Literal
 from urllib.parse import urlsplit
 
@@ -39,20 +40,24 @@ class JobMatchRequest(BaseModel):
             port = parsed.port
         except ValueError as error:
             raise ValueError("Enter a valid LinkedIn URL.") from error
-        hostname_labels = hostname.casefold().split(".") if hostname else []
-        is_linkedin_host = (
-            len(hostname_labels) >= 2
-            and hostname_labels[-2:] == ["linkedin", "com"]
-            and all(hostname_labels)
+        hostname = hostname.casefold() if hostname is not None else None
+        is_linkedin_page = hostname in {"linkedin.com", "www.linkedin.com"} and (
+            re.fullmatch(r"/jobs/view/[A-Za-z0-9%._~-]+/?", parsed.path)
+            or re.fullmatch(r"/posts/[A-Za-z0-9%._~-]+/?", parsed.path)
+        )
+        is_short_post_link = hostname == "lnkd.in" and re.fullmatch(
+            r"/p/[A-Za-z0-9_-]+/?", parsed.path
         )
         if (
             parsed.scheme.casefold() != "https"
-            or not is_linkedin_host
+            or hostname is None
+            or hostname not in {"linkedin.com", "www.linkedin.com", "lnkd.in"}
             or parsed.username is not None
             or parsed.password is not None
             or port not in (None, 443)
+            or not (is_linkedin_page or is_short_post_link)
         ):
-            raise ValueError("Enter a valid HTTPS URL on linkedin.com.")
+            raise ValueError("Enter a public LinkedIn job or post URL, or an lnkd.in/p/... link.")
         return cleaned_value
 
     @model_validator(mode="after")
@@ -72,6 +77,13 @@ class LearningRoadmapItem(BaseModel):
 
 
 class JobMatchResponse(BaseModel):
+    job_title: str = ""
+    company: str = ""
+    job_summary: str = ""
+    source: Literal["pasted_description", "linkedin_listing", "linkedin_listing_and_description"] = (
+        "pasted_description"
+    )
+    source_warning: str = ""
     matched_skills: list[str] = Field(default_factory=list)
     missing_skills: list[str] = Field(default_factory=list)
     required_skills: list[str] = Field(default_factory=list)

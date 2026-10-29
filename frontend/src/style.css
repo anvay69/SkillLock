@@ -929,6 +929,34 @@ a {
   color: var(--green);
 }
 
+.job-match-results > .job-match-section-heading > p:not(.eyebrow) {
+  margin: 5px 0 0;
+  color: var(--muted);
+  font-size: 15px;
+}
+
+.job-match-source {
+  margin: 0 0 13px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.job-match-warning {
+  margin: 0 0 15px;
+  padding: 10px 12px;
+  border-left: 3px solid #c99b4c;
+  background: #fbf6e9;
+  color: #684f26;
+  font-size: 14px;
+}
+
+.job-summary {
+  margin: 0 0 14px;
+  color: var(--ink-soft);
+  font-size: 15px;
+  line-height: 1.65;
+}
+
 .readiness-feedback {
   margin: 0;
   padding: 14px 16px;

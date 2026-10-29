@@ -44,6 +44,7 @@ export default function JobMatchingPage({ onDashboard, onProfile, onLogout }) {
     event.preventDefault();
     setError("");
     setProgressError("");
+    setResult(null);
     setAnalyzing(true);
     try {
       const analysis = await request("/api/job-matching/analyze", {
@@ -107,12 +108,12 @@ export default function JobMatchingPage({ onDashboard, onProfile, onLogout }) {
 
         <section className="job-match-form-section" aria-labelledby="job-match-form-heading">
           <div className="job-match-section-heading">
-            <h2 id="job-match-form-heading">Add a job description</h2>
-            <p>Paste the listing text to identify recognized skills, gaps, and learning steps.</p>
+            <h2 id="job-match-form-heading">Analyze a LinkedIn job</h2>
+            <p>Use a public listing URL, paste the job description, or provide both.</p>
           </div>
           <form className="job-match-form" onSubmit={analyze}>
             <label className="field">
-              <span>Job description</span>
+              <span>Job description <span className="field-optional">(optional)</span></span>
               <textarea
                 value={jobDescription}
                 onChange={(event) => setJobDescription(event.target.value)}
@@ -122,7 +123,7 @@ export default function JobMatchingPage({ onDashboard, onProfile, onLogout }) {
               />
             </label>
             <label className="field">
-              <span>LinkedIn listing URL <span className="field-optional">(optional)</span></span>
+              <span>LinkedIn public job URL <span className="field-optional">(optional)</span></span>
               <input
                 type="url"
                 value={linkedinUrl}
@@ -132,7 +133,7 @@ export default function JobMatchingPage({ onDashboard, onProfile, onLogout }) {
               />
             </label>
             <p className="job-match-note">
-              LinkedIn pages are not fetched. If you enter a URL, include the job description text above to analyze it.
+              Public LinkedIn job pages are retrieved without signing in. If LinkedIn limits access or the listing is no longer public, paste its description instead.
             </p>
             {error && <p className="error" role="alert">{error}</p>}
             <button
@@ -148,8 +149,18 @@ export default function JobMatchingPage({ onDashboard, onProfile, onLogout }) {
           <section className="job-match-results" aria-live="polite">
             <div className="job-match-section-heading">
               <p className="eyebrow">YOUR ANALYSIS</p>
-              <h2>Skill match results</h2>
+              <h2>{result.job_title || "Skill match results"}</h2>
+              {result.company && <p>{result.company}</p>}
             </div>
+            <p className="job-match-source">
+              {result.source === "linkedin_listing"
+                ? "Gemini extracted job requirements from the public listing; profile comparison was performed in SkillLock."
+                : result.source === "linkedin_listing_and_description"
+                  ? "Gemini analyzed the public listing and your additional description; profile comparison was performed in SkillLock."
+                  : "Gemini analyzed the job description; profile comparison was performed in SkillLock."}
+            </p>
+            {result.source_warning && <p className="job-match-warning">{result.source_warning}</p>}
+            {result.job_summary && <p className="job-summary">{result.job_summary}</p>}
             <p className="readiness-feedback">{result.readiness_feedback}</p>
             <div className="job-skill-columns">
               <SkillList title="Matched skills" skills={result.matched_skills} variant="matched" />

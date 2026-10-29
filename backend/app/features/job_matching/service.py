@@ -451,15 +451,63 @@ def analyze_job_description(
     learning_progress: dict[str, str] | None = None,
 ) -> dict[str, object]:
     skill_candidates = [*known_skills, *candidate_skills]
+    mentions = _skill_mentions(job_description, skill_candidates)
+    priorities = _classify_mentions(job_description, mentions)
+    required_skills = [skill for skill, priority in priorities.items() if priority == "required"]
+    preferred_skills = [skill for skill, priority in priorities.items() if priority == "preferred"]
+    return _compare_job_skills(
+        required_skills,
+        preferred_skills,
+        candidate_skills,
+        learning_progress,
+    )
+
+
+def analyze_job_requirements(
+    required_skills: list[str],
+    preferred_skills: list[str],
+    candidate_skills: list[str],
+    known_skills: list[str],
+    learning_progress: dict[str, str] | None = None,
+) -> dict[str, object]:
+    known_by_normalized = {
+        _normalized(canonical_skill(skill)): canonical_skill(skill)
+        for skill in [*known_skills, *candidate_skills]
+        if skill.strip()
+    }
+
+    def recognized(skills: list[str]) -> list[str]:
+        result: list[str] = []
+        seen: set[str] = set()
+        for skill in skills:
+            canonical = canonical_skill(skill)
+            key = _normalized(canonical)
+            if key in known_by_normalized and key not in seen:
+                result.append(known_by_normalized[key])
+                seen.add(key)
+        return result
+
+    required = recognized(required_skills)
+    required_keys = {_normalized(skill) for skill in required}
+    preferred = [
+        skill
+        for skill in recognized(preferred_skills)
+        if _normalized(skill) not in required_keys
+    ]
+    return _compare_job_skills(required, preferred, candidate_skills, learning_progress)
+
+
+def _compare_job_skills(
+    required_skills: list[str],
+    preferred_skills: list[str],
+    candidate_skills: list[str],
+    learning_progress: dict[str, str] | None,
+) -> dict[str, object]:
     candidate_skill_names = {
         _normalized(canonical_skill(skill))
         for skill in candidate_skills
         if skill.strip()
     }
-    mentions = _skill_mentions(job_description, skill_candidates)
-    priorities = _classify_mentions(job_description, mentions)
-    required_skills = [skill for skill, priority in priorities.items() if priority == "required"]
-    preferred_skills = [skill for skill, priority in priorities.items() if priority == "preferred"]
     matched_skills = [
         skill for skill in required_skills + preferred_skills
         if _normalized(skill) in candidate_skill_names
