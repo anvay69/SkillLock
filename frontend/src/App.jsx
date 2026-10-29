@@ -7,6 +7,7 @@ import JDAnalysisPage from "./features/jd-analysis/JDAnalysisPage";
 import JobMatchingPage from "./features/job-matching/JobMatchingPage";
 import ProfilePage from "./features/profile/ProfilePage";
 import ResumeParserPage from "./features/resume-parser/ResumeParserPage";
+import PersonalAssistant from "./components/PersonalAssistant";
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -40,9 +41,9 @@ export default function App() {
   if (loading) return <main className="loading-page">Loading SkillLock...</main>;
   if (!user) return <AuthPage mode={mode} onModeChange={setMode} onLogin={signIn} />;
 
-  let pageContent = null;
+  let content = null;
   if (page === "profile") {
-    pageContent = (
+    content = (
       <ProfilePage
         user={user}
         extractedAdded={extractedAdded}
@@ -57,12 +58,10 @@ export default function App() {
         onLogout={signOut}
       />
     );
-  }
-  if (page === "assessment" && assessmentId) {
-    return <AssessmentPage assessmentId={assessmentId} onDashboard={() => setPage("dashboard")} />;
-  }
-  if (page === "job-matching") {
-    return (
+  } else if (page === "assessment" && assessmentId) {
+    content = <AssessmentPage assessmentId={assessmentId} onDashboard={() => setPage("dashboard")} />;
+  } else if (page === "job-matching") {
+    content = (
       <JobMatchingPage
         onDashboard={() => setPage("dashboard")}
         onProfile={() => setPage("profile")}
@@ -71,9 +70,8 @@ export default function App() {
         onLogout={signOut}
       />
     );
-  }
-  if (page === "jd-analysis") {
-    return (
+  } else if (page === "jd-analysis") {
+    content = (
       <JDAnalysisPage
         onDashboard={() => setPage("dashboard")}
         onProfile={() => setPage("profile")}
@@ -82,9 +80,8 @@ export default function App() {
         onLogout={signOut}
       />
     );
-  }
-  if (page === "resume-parser") {
-    return (
+  } else if (page === "resume-parser") {
+    content = (
       <ResumeParserPage
         onDashboard={() => setPage("dashboard")}
         onProfile={() => setPage("profile")}
@@ -93,20 +90,28 @@ export default function App() {
         onLogout={signOut}
       />
     );
+  } else {
+    content = (
+      <DashboardPage
+        user={user}
+        extractedAdded={extractedAdded}
+        onProfile={() => setPage("profile")}
+        onJobMatching={() => setPage("job-matching")}
+        onJDAnalysis={() => setPage("jd-analysis")}
+        onResumeParser={() => setPage("resume-parser")}
+        onAssessment={(id) => {
+          setAssessmentId(id);
+          setPage("assessment");
+        }}
+        onLogout={signOut}
+      />
+    );
   }
+
   return (
-    <DashboardPage
-      user={user}
-      extractedAdded={extractedAdded}
-      onProfile={() => setPage("profile")}
-      onJobMatching={() => setPage("job-matching")}
-      onJDAnalysis={() => setPage("jd-analysis")}
-      onResumeParser={() => setPage("resume-parser")}
-      onAssessment={(id) => {
-        setAssessmentId(id);
-        setPage("assessment");
-      }}
-      onLogout={signOut}
-    />
+    <>
+      {content}
+      {page !== "assessment" && <PersonalAssistant user={user} />}
+    </>
   );
 }
