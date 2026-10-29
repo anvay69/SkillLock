@@ -162,6 +162,13 @@ export default function JobMatchingPage({ onDashboard, onProfile, onJDAnalysis, 
             </p>
             {result.source_warning && <p className="job-match-warning">{result.source_warning}</p>}
             {result.job_summary && <p className="job-summary">{result.job_summary}</p>}
+            <div className="match-score" aria-label="Weighted skill match score">
+              <strong>{result.match_score == null ? "—" : `${result.match_score}%`}</strong>
+              <span>
+                Skill match score
+                <small>Required skills count twice as much as preferred skills.</small>
+              </span>
+            </div>
             <p className="readiness-feedback">{result.readiness_feedback}</p>
             <div className="job-skill-columns">
               <SkillList title="Matched skills" skills={result.matched_skills} variant="matched" />

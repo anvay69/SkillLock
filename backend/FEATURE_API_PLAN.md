@@ -98,8 +98,10 @@ comparison stays local; candidate profile details are not sent to Gemini.
   and/or a public LinkedIn listing URL, extract its public job description and
   compare stated requirements with the authenticated candidate's saved profile
   and extracted resume
-  details. Return matched skills, skill gaps, readiness feedback, and
-  suggestions. Do not sign in or bypass LinkedIn access restrictions. Follow
+  details. Return matched skills, skill gaps, a weighted skill match score,
+  readiness feedback, and suggestions. Required skills count twice as much as
+  preferred skills; the score is unavailable when no recognized skills exist.
+  Do not sign in or bypass LinkedIn access restrictions. Follow
   only redirects that pass the LinkedIn host and path checks. Callers can provide
   the listing text when URL content is not publicly available. Gemini API
   configuration is read from `GEMINI_API_KEY`
@@ -110,7 +112,7 @@ comparison stays local; candidate profile details are not sent to Gemini.
 
 | Method | Endpoint | Purpose |
 |---|---|---|
-| `POST` | `/api/job-matching/analyze` | Analyze a supplied job description and/or a publicly readable LinkedIn job listing against the current candidate's profile; return listing metadata, matched skills, missing skills, readiness feedback, and actionable suggestions. |
+| `POST` | `/api/job-matching/analyze` | Analyze a supplied job description and/or a publicly readable LinkedIn job listing against the current candidate's profile; return listing metadata, weighted skill match score, matched and missing skills, readiness feedback, and actionable suggestions. |
 | `PUT` | `/api/job-matching/learning-progress` | Persist the candidate's status for a recognized roadmap skill. |
 
 The request requires at least one of `job_description` or `linkedin_url`.

@@ -1118,6 +1118,36 @@ a {
   line-height: 1.65;
 }
 
+.match-score {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 14px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #f7faf7;
+  color: var(--ink-soft);
+}
+
+.match-score > strong {
+  color: var(--green);
+  font-size: 30px;
+  line-height: 1;
+}
+
+.match-score span {
+  display: grid;
+  gap: 3px;
+  font-weight: 600;
+}
+
+.match-score small {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 400;
+}
+
 .readiness-feedback {
   margin: 0;
   padding: 14px 16px;

@@ -88,21 +88,21 @@ def initialize_database() -> None:
             "INSERT OR IGNORE INTO skills (name) VALUES (?)",
             [(name.strip(),) for name in seed["skills"] if name.strip()],
         )
-        candidate = seed["candidate"]
         from app.services.security import hash_password
 
-        db.execute(
-            """INSERT OR IGNORE INTO users
-               (name, username, email, password_hash, profile_json)
-               VALUES (?, ?, ?, ?, ?)""",
-            (
-                candidate["name"],
-                candidate["username"],
-                candidate["email"].lower(),
-                hash_password(candidate["password"]),
-                json.dumps(candidate["profile"]),
-            ),
-        )
+        for candidate in [seed["candidate"], *seed.get("demo_candidates", [])]:
+            db.execute(
+                """INSERT OR IGNORE INTO users
+                   (name, username, email, password_hash, profile_json)
+                   VALUES (?, ?, ?, ?, ?)""",
+                (
+                    candidate["name"],
+                    candidate["username"],
+                    candidate["email"].lower(),
+                    hash_password(candidate["password"]),
+                    json.dumps(candidate["profile"]),
+                ),
+            )
         for assessment in seed.get("assessments", []):
             db.execute(
                 """INSERT OR IGNORE INTO assessments

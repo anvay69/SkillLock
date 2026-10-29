@@ -523,6 +523,17 @@ def _compare_job_skills(
     missing_skills = missing_required_skills + missing_preferred_skills
     recognized_skills = required_skills + preferred_skills
     learning_progress = learning_progress or {}
+    total_weight = len(required_skills) * 2 + len(preferred_skills)
+    matched_weight = (
+        (len(required_skills) - len(missing_required_skills)) * 2
+        + len(preferred_skills)
+        - len(missing_preferred_skills)
+    )
+    match_score = (
+        round(matched_weight / total_weight * 100)
+        if total_weight
+        else None
+    )
 
     if not recognized_skills:
         readiness_feedback = (
@@ -559,6 +570,7 @@ def _compare_job_skills(
         ),
     ]
     return {
+        "match_score": match_score,
         "matched_skills": matched_skills,
         "missing_skills": missing_skills,
         "required_skills": required_skills,

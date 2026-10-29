@@ -156,14 +156,14 @@ class ResumeUploadApiTests(unittest.TestCase):
         listing = {
             "job_title": "Backend Developer",
             "company": "Example Co",
-            "job_description": "Python is required. TypeScript is preferred.",
-            "page_text": "Backend Developer at Example Co: Python is required. TypeScript is preferred.",
+            "job_description": "Go is required. TypeScript is preferred.",
+            "page_text": "Backend Developer at Example Co: Go is required. TypeScript is preferred.",
         }
         extracted = GeminiJobRequirements(
             job_title="Backend Developer",
             company="Example Co",
             job_summary="Build API services.",
-            required_skills=["Python"],
+            required_skills=["Go"],
             preferred_skills=["TypeScript"],
         )
         with (
@@ -181,7 +181,7 @@ class ResumeUploadApiTests(unittest.TestCase):
         self.assertEqual(body["job_title"], "Backend Developer")
         self.assertEqual(body["company"], "Example Co")
         self.assertEqual(body["job_summary"], "Build API services.")
-        self.assertIn("Python", body["matched_skills"])
+        self.assertIn("Go", body["matched_skills"])
         self.assertIn("TypeScript", body["missing_preferred_skills"])
 
     def test_job_matching_sends_pasted_description_to_gemini(self) -> None:
@@ -285,7 +285,7 @@ class ResumeUploadApiTests(unittest.TestCase):
             job_title="Backend Developer",
             company="",
             job_summary="Build API services.",
-            required_skills=["Python"],
+            required_skills=["Go"],
             preferred_skills=[],
         )
         with (
@@ -304,7 +304,7 @@ class ResumeUploadApiTests(unittest.TestCase):
                 "/api/job-matching/analyze",
                 json={
                     "linkedin_url": "https://www.linkedin.com/jobs/view/123456",
-                    "job_description": "Python is required.",
+                    "job_description": "Go is required.",
                 },
             )
 
@@ -312,27 +312,27 @@ class ResumeUploadApiTests(unittest.TestCase):
         body = response.json()
         self.assertEqual(body["source"], "pasted_description")
         self.assertIn("not public", body["source_warning"])
-        self.assertIn("Python", body["matched_skills"])
+        self.assertIn("Go", body["matched_skills"])
         self.assertEqual(extract.call_args.args[0], "")
-        self.assertEqual(extract.call_args.args[2], "Python is required.")
+        self.assertEqual(extract.call_args.args[2], "Go is required.")
 
     def test_pdf_is_saved_extracted_merged_and_used_by_job_matching(self) -> None:
         before = self.client.get("/api/me").json()
         content = make_text_pdf(
             [
                 "Skills",
-                "Rust, python",
+                "Rust, Go",
                 "Projects",
-                "Project: community garden",
+                "Project: ShardKV",
                 "Project: Budget Planner",
                 "Experience",
                 "software engineer at northstar labs",
                 "Data Analyst at Example Systems",
                 "Education",
-                "BSc Computer Science at State University 2022",
+                "BTech Computer Science at National Institute of Technology 2020",
                 "MSc Data Science at Northstar University 2024",
                 "Certifications",
-                "aws certified cloud practitioner",
+                "certified kubernetes administrator",
                 "AWS Certified Developer",
             ]
         )
@@ -376,21 +376,24 @@ class ResumeUploadApiTests(unittest.TestCase):
             ["AWS Certified Developer"],
         )
 
-        self.assertIn("Python", profile["skills"])
+        self.assertIn("Go", profile["skills"])
         self.assertIn("Rust", profile["skills"])
-        self.assertEqual(profile["skills"].count("Python"), 1)
-        self.assertIn("Community Garden", [item["title"] for item in profile["projects"]])
+        self.assertEqual(profile["skills"].count("Go"), 1)
+        self.assertIn("ShardKV", [item["title"] for item in profile["projects"]])
         self.assertIn("Budget Planner", [item["title"] for item in profile["projects"]])
         self.assertEqual(profile["bio"], before["bio"])
         self.assertEqual(profile["github_url"], before["github_url"])
         self.assertIn("Software Engineer", [item["job_title"] for item in profile["experience"]])
-        self.assertIn("State University", [item["institution"] for item in profile["education"]])
         self.assertIn(
-            "AWS Certified Cloud Practitioner",
+            "National Institute of Technology, Tiruchirappalli",
+            [item["institution"] for item in profile["education"]],
+        )
+        self.assertIn(
+            "Certified Kubernetes Administrator",
             [item["name"] for item in profile["certifications"]],
         )
         self.assertEqual(
-            [item["title"] for item in profile["projects"]].count("Community Garden"),
+            [item["title"] for item in profile["projects"]].count("ShardKV"),
             1,
         )
         self.assertEqual(
@@ -398,12 +401,14 @@ class ResumeUploadApiTests(unittest.TestCase):
             1,
         )
         self.assertEqual(
-            [item["institution"] for item in profile["education"]].count("State University"),
+            [item["institution"] for item in profile["education"]].count(
+                "National Institute of Technology, Tiruchirappalli"
+            ),
             1,
         )
         self.assertEqual(
             [item["name"] for item in profile["certifications"]].count(
-                "AWS Certified Cloud Practitioner"
+                "Certified Kubernetes Administrator"
             ),
             1,
         )
@@ -634,7 +639,7 @@ class ResumeUploadApiTests(unittest.TestCase):
         content = make_docx(
             [
                 "Technical Skills",
-                "Go, SQL",
+                "Rust, SQL",
                 "Projects",
                 "Project: Inventory Dashboard",
                 "Experience",
@@ -646,7 +651,7 @@ class ResumeUploadApiTests(unittest.TestCase):
             ]
         )
         extracted = ExtractedProfile(
-            skills=["Go", "SQL"],
+            skills=["Rust", "SQL"],
             projects=[Project(title="Inventory Dashboard")],
             experience=[Experience(job_title="Product Engineer", company="Example Studio")],
             education=[
@@ -674,13 +679,13 @@ class ResumeUploadApiTests(unittest.TestCase):
         body = response.json()
         profile = body["profile"]
         added = body["extracted_added"]
-        self.assertIn("Go", added["skills"])
+        self.assertIn("Rust", added["skills"])
         self.assertIn("Inventory Dashboard", [item["title"] for item in added["projects"]])
         self.assertIn("Product Engineer", [item["job_title"] for item in added["experience"]])
         self.assertIn("City College", [item["institution"] for item in added["education"]])
         self.assertIn("Cloud Security Certificate", [item["name"] for item in added["certifications"]])
         self.assertIn("Go", profile["skills"])
-        self.assertIn("Community Garden", [item["title"] for item in profile["projects"]])
+        self.assertIn("ShardKV", [item["title"] for item in profile["projects"]])
         self.assertTrue(
             (self.private_resume_dir / str(profile["id"]) / Path(profile["resume"]).name).is_file()
         )

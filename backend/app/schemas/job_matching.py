@@ -80,6 +80,7 @@ class JobMatchResponse(BaseModel):
     job_title: str = ""
     company: str = ""
     job_summary: str = ""
+    match_score: int | None = None
     source: Literal["pasted_description", "linkedin_listing", "linkedin_listing_and_description"] = (
         "pasted_description"
     )
