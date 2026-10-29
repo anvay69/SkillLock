@@ -9,14 +9,8 @@ from fastapi import UploadFile
 from pypdf import PdfReader
 
 from app.core.config import PRIVATE_RESUMES, UPLOADS
-from app.schemas.profile import (
-    Certification,
-    Education,
-    Experience,
-    ExtractedProfile,
-    ProfileData,
-    Project,
-)
+from app.features.resume.gemini import ResumeGeminiError, extract_resume_profile
+from app.schemas.profile import ExtractedProfile, ProfileData
 
 logger = logging.getLogger(__name__)
 MAX_RESUME_BYTES = 5 * 1024 * 1024
@@ -47,12 +41,27 @@ HEADINGS = {
     "licenses and certifications": "certifications",
 }
 
-DEGREE_PATTERN = re.compile(
-    r"\b(?:b\.?\s?sc\.?|b\.?\s?s\.?|b\.?\s?a\.?|bachelor(?:'s)?|"
-    r"m\.?\s?sc\.?|m\.?\s?s\.?|m\.?\s?a\.?|"
-    r"master(?:'s)?|ph\.?\s?d\.?|doctorate|associate(?:'s)?|diploma)\b",
-    re.IGNORECASE,
-)
+EXCLUDED_HEADINGS = {
+    "personal info",
+    "personal information",
+    "personal details",
+    "contact",
+    "contact info",
+    "contact information",
+    "contact details",
+    "about me",
+    "profile",
+    "summary",
+    "professional summary",
+    "objective",
+    "career objective",
+    "references",
+    "interests",
+    "hobbies",
+    "awards",
+    "publications",
+    "activities",
+}
 DATE_PATTERN = re.compile(r"\b(?:19|20)\d{2}\b")
 
 
@@ -87,106 +96,14 @@ def _sections(text: str) -> dict[str, list[str]]:
         if heading in HEADINGS:
             current = HEADINGS[heading]
             sections.setdefault(current, [])
+        elif heading in EXCLUDED_HEADINGS:
+            current = None
         elif current:
             sections[current].append(line)
     return sections
 
 
-def _skills(lines: list[str]) -> list[str]:
-    result: list[str] = []
-    for line in lines:
-        line = re.sub(
-            r"^(?:programming languages|languages|tools|technologies|frameworks|libraries|"
-            r"cloud platforms|databases|technical skills)\s*:\s*",
-            "",
-            line,
-            flags=re.I,
-        )
-        if len(line) > 160:
-            continue
-        values = re.split(r"[,;|•·]", line)
-        for value in values:
-            skill = value.strip(" \t-")
-            if 1 < len(skill) <= 48 and not re.search(r"[.!?]", skill):
-                result.append(skill)
-    return result
-
-
-def _projects(lines: list[str]) -> list[Project]:
-    projects: list[Project] = []
-    for line in lines:
-        title = _clean_line(line)
-        explicit_title = re.match(r"^project\s*:\s*(.+)$", title, re.I)
-        if explicit_title:
-            title = explicit_title.group(1).strip()
-        else:
-            continue
-        if 3 <= len(title) <= 80 and not re.search(r"[.!?]", title) and not DATE_PATTERN.search(title):
-            projects.append(Project(title=title))
-    return projects
-
-
-def _experience(lines: list[str]) -> list[Experience]:
-    experiences: list[Experience] = []
-    for line in lines:
-        line = _clean_line(line)
-        parts = re.split(r"\s+(?:\||@|at)\s+", line, maxsplit=2, flags=re.I)
-        if len(parts) < 2:
-            continue
-        title = parts[0].strip(" ,|-")
-        company = parts[1].strip(" ,|-")
-        if len(parts) == 3:
-            company = company.split("|", 1)[0].strip(" ,|-")
-        else:
-            date_match = DATE_PATTERN.search(company)
-            if date_match:
-                company = company[:date_match.start()].strip(" ,|-")
-        if not title or not company or len(title) > 80 or len(company) > 80:
-            continue
-        if DATE_PATTERN.search(title) or DATE_PATTERN.search(company):
-            continue
-        experiences.append(Experience(job_title=title, company=company))
-    return experiences
-
-
-def _education(lines: list[str]) -> list[Education]:
-    education: list[Education] = []
-    for line in lines:
-        line = _clean_line(line)
-        if not DEGREE_PATTERN.search(line):
-            continue
-        parts = re.split(r"\s+(?:at|,|\||—|-)\s+", line, maxsplit=1, flags=re.I)
-        degree_field = parts[0]
-        degree_match = DEGREE_PATTERN.search(degree_field)
-        if not degree_match:
-            continue
-        degree = line[degree_match.start():degree_match.end()]
-        if line[degree_match.end():].startswith("."):
-            degree += "."
-        field = degree_field[degree_match.end():].strip(" .,:-")
-        institution = parts[1].strip() if len(parts) > 1 else ""
-        institution = re.sub(r"[, ]+(?:19|20)\d{2}\s*$", "", institution)
-        graduation_year = DATE_PATTERN.search(line)
-        education.append(
-            Education(
-                degree=degree,
-                field_of_study=field,
-                institution=institution,
-                graduation_year=graduation_year.group() if graduation_year else "",
-            )
-        )
-    return education
-
-
-def _certifications(lines: list[str]) -> list[Certification]:
-    return [
-        Certification(name=_clean_line(line))
-        for line in lines
-        if 3 <= len(_clean_line(line)) <= 100 and not DATE_PATTERN.fullmatch(_clean_line(line))
-    ]
-
-
-def extract_resume(path: Path) -> ExtractedProfile:
+def extract_resume(path: Path, profile: ProfileData) -> ExtractedProfile:
     try:
         text = _read_resume(path)
     except Exception as error:
@@ -197,13 +114,7 @@ def extract_resume(path: Path) -> ExtractedProfile:
             "No readable text was found. Use a text-based PDF or a DOCX resume."
         )
     sections = _sections(text)
-    return ExtractedProfile(
-        skills=_skills(sections.get("skills", [])),
-        projects=_projects(sections.get("projects", [])),
-        experience=_experience(sections.get("experience", [])),
-        education=_education(sections.get("education", [])),
-        certifications=_certifications(sections.get("certifications", [])),
-    )
+    return extract_resume_profile(sections, profile)
 
 
 def add_extracted_profile(
@@ -229,36 +140,77 @@ def add_extracted_profile(
         for item in getattr(extracted, collection):
             if collection == "projects":
                 key = _normalized(item.title)
-                duplicate = bool(key) and any(_normalized(existing.title) == key for existing in current_items)
+                duplicate_index = next(
+                    (
+                        index
+                        for index, existing in enumerate(current_items)
+                        if key and _normalized(existing.title) == key
+                    ),
+                    None,
+                )
             elif collection == "experience":
                 title = _normalized(item.job_title)
                 company = _normalized(item.company)
-                duplicate = bool(title) and any(
-                    _normalized(existing.job_title) == title
-                    and (not company or not _normalized(existing.company) or _normalized(existing.company) == company)
-                    for existing in current_items
+                duplicate_index = next(
+                    (
+                        index
+                        for index, existing in enumerate(current_items)
+                        if title
+                        and _normalized(existing.job_title) == title
+                        and (
+                            not company
+                            or not _normalized(existing.company)
+                            or _normalized(existing.company) == company
+                        )
+                    ),
+                    None,
                 )
             elif collection == "education":
                 degree = _normalized(item.degree)
                 institution = _normalized_institution(item.institution)
                 field = _normalized(item.field_of_study)
-                duplicate = bool(degree or institution) and any(
-                    (degree and _normalized(existing.degree) == degree
-                     or institution and _normalized(existing.institution) == institution)
-                    and (
-                        not institution
-                        or not _normalized_institution(existing.institution)
-                        or _normalized_institution(existing.institution) == institution
-                    )
-                    and (not field or not _normalized(existing.field_of_study) or _normalized(existing.field_of_study) == field)
-                    for existing in current_items
+                duplicate_index = next(
+                    (
+                        index
+                        for index, existing in enumerate(current_items)
+                        if (
+                            degree and _normalized(existing.degree) == degree
+                            or institution
+                            and _normalized(existing.institution) == institution
+                        )
+                        and (
+                            not institution
+                            or not _normalized_institution(existing.institution)
+                            or _normalized_institution(existing.institution) == institution
+                        )
+                        and (
+                            not field
+                            or not _normalized(existing.field_of_study)
+                            or _normalized(existing.field_of_study) == field
+                        )
+                    ),
+                    None,
                 )
             else:
                 name = _normalized(item.name)
-                duplicate = bool(name) and any(_normalized(existing.name) == name for existing in current_items)
-            if not duplicate:
+                duplicate_index = next(
+                    (
+                        index
+                        for index, existing in enumerate(current_items)
+                        if name and _normalized(existing.name) == name
+                    ),
+                    None,
+                )
+            if duplicate_index is None:
                 current_items.append(item)
                 added_items.append(item)
+            else:
+                existing = current_items[duplicate_index]
+                merged_values = existing.model_dump()
+                for field, value in item.model_dump().items():
+                    if not merged_values[field] and value:
+                        merged_values[field] = value
+                current_items[duplicate_index] = type(existing).model_validate(merged_values)
         added[collection] = added_items
 
     return updated, ExtractedProfile(**added)
@@ -289,6 +241,7 @@ def _resume_filename(resume_url: str) -> str | None:
 async def store_resume(
     upload: UploadFile | None,
     owner_id: int,
+    profile: ProfileData,
 ) -> tuple[str, ExtractedProfile]:
     if upload is None or not upload.filename:
         return "", ExtractedProfile()
@@ -309,8 +262,11 @@ async def store_resume(
                 if total_size > MAX_RESUME_BYTES:
                     raise ValueError("Resume must be 5 MB or smaller.")
                 resume_file.write(chunk)
-        extracted = extract_resume(destination)
+        extracted = extract_resume(destination, profile)
     except ValueError:
+        destination.unlink(missing_ok=True)
+        raise
+    except ResumeGeminiError:
         destination.unlink(missing_ok=True)
         raise
     except OSError as error:

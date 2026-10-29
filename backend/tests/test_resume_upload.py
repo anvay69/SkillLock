@@ -14,8 +14,16 @@ from app.core import database
 from app.core.config import SEED_FILE, UPLOADS
 from app.features.job_matching import routes as job_matching_routes
 from app.features.job_matching.gemini import GeminiJobRequirements
+from app.features.resume import gemini as resume_gemini
 from app.features.resume import service as resume_service
 from app.main import app
+from app.schemas.profile import (
+    Certification,
+    Education,
+    Experience,
+    ExtractedProfile,
+    Project,
+)
 from app.services import uploads as upload_service
 
 
@@ -98,6 +106,13 @@ class ResumeUploadApiTests(unittest.TestCase):
         self.addCleanup(self.resume_uploads_patch.stop)
         self.addCleanup(self.private_resumes_patch.stop)
         self.addCleanup(self.generic_uploads_patch.stop)
+        self.resume_extraction_patch = patch.object(
+            resume_service,
+            "extract_resume_profile",
+            return_value=ExtractedProfile(),
+        )
+        self.resume_extraction_patch.start()
+        self.addCleanup(self.resume_extraction_patch.stop)
 
         self.client = TestClient(app)
         self.client.__enter__()
@@ -321,10 +336,25 @@ class ResumeUploadApiTests(unittest.TestCase):
                 "AWS Certified Developer",
             ]
         )
-        response = self.client.post(
-            "/api/me/resume",
-            files={"resume": ("resume.pdf", content, "application/pdf")},
+        extracted = ExtractedProfile(
+            skills=["Rust"],
+            projects=[Project(title="Budget Planner")],
+            experience=[Experience(job_title="Data Analyst", company="Example Systems")],
+            education=[
+                Education(
+                    degree="MSc",
+                    field_of_study="Data Science",
+                    institution="Northstar University",
+                    graduation_year="2024",
+                )
+            ],
+            certifications=[Certification(name="AWS Certified Developer")],
         )
+        with patch.object(resume_service, "extract_resume_profile", return_value=extracted):
+            response = self.client.post(
+                "/api/me/resume",
+                files={"resume": ("resume.pdf", content, "application/pdf")},
+            )
         self.assertEqual(response.status_code, 200, response.text)
         body = response.json()
         self.assertEqual(set(body), {"profile", "extracted_added"})
@@ -484,17 +514,22 @@ class ResumeUploadApiTests(unittest.TestCase):
             "username": "morganexample",
             "email": "morgan@example.com",
         }
-        signup = self.client.post(
-            "/api/signup",
-            data={"profile": json.dumps(profile), "password": "signup-test-password"},
-            files={
-                "resume": (
-                    "resume.docx",
-                    content,
-                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                )
-            },
-        )
+        with patch.object(
+            resume_service,
+            "extract_resume_profile",
+            return_value=ExtractedProfile(skills=["Elixir"]),
+        ):
+            signup = self.client.post(
+                "/api/signup",
+                data={"profile": json.dumps(profile), "password": "signup-test-password"},
+                files={
+                    "resume": (
+                        "resume.docx",
+                        content,
+                        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                    )
+                },
+            )
         self.assertEqual(signup.status_code, 200, signup.text)
         result = signup.json()
         user_id = result["profile"]["id"]
@@ -568,7 +603,14 @@ class ResumeUploadApiTests(unittest.TestCase):
             finally:
                 second.__exit__(None, None, None)
 
-            with patch.object(resume_service, "UPLOADS", UPLOADS):
+            with (
+                patch.object(resume_service, "UPLOADS", UPLOADS),
+                patch.object(
+                    resume_service,
+                    "extract_resume_profile",
+                    return_value=ExtractedProfile(skills=["Rust"]),
+                ),
+            ):
                 replacement = self.client.post(
                     "/api/me/resume",
                     files={
@@ -603,16 +645,31 @@ class ResumeUploadApiTests(unittest.TestCase):
                 "Cloud Security Certificate",
             ]
         )
-        response = self.client.post(
-            "/api/me/resume",
-            files={
-                "resume": (
-                    "resume.docx",
-                    content,
-                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        extracted = ExtractedProfile(
+            skills=["Go", "SQL"],
+            projects=[Project(title="Inventory Dashboard")],
+            experience=[Experience(job_title="Product Engineer", company="Example Studio")],
+            education=[
+                Education(
+                    degree="BSc",
+                    field_of_study="Software Engineering",
+                    institution="City College",
+                    graduation_year="2023",
                 )
-            },
+            ],
+            certifications=[Certification(name="Cloud Security Certificate")],
         )
+        with patch.object(resume_service, "extract_resume_profile", return_value=extracted):
+            response = self.client.post(
+                "/api/me/resume",
+                files={
+                    "resume": (
+                        "resume.docx",
+                        content,
+                        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                    )
+                },
+            )
         self.assertEqual(response.status_code, 200, response.text)
         body = response.json()
         profile = body["profile"]
@@ -634,6 +691,32 @@ class ResumeUploadApiTests(unittest.TestCase):
             files={"resume": ("resume.txt", b"Skills\nPython", "text/plain")},
         )
         self.assertEqual(response.status_code, 400, response.text)
+        self.assertEqual(
+            [path for path in self.private_resume_dir.rglob("*") if path.is_file()],
+            [],
+        )
+
+    def test_gemini_failure_does_not_save_or_replace_uploaded_resume(self) -> None:
+        with patch.object(
+            resume_service,
+            "extract_resume_profile",
+            side_effect=resume_gemini.ResumeGeminiServiceError(
+                "Gemini did not return valid structured resume details."
+            ),
+        ):
+            response = self.client.post(
+                "/api/me/resume",
+                files={
+                    "resume": (
+                        "resume.pdf",
+                        make_text_pdf(["Skills", "Python"]),
+                        "application/pdf",
+                    )
+                },
+            )
+
+        self.assertEqual(response.status_code, 502, response.text)
+        self.assertIn("Gemini did not return valid structured resume details", response.json()["detail"])
         self.assertEqual(
             [path for path in self.private_resume_dir.rglob("*") if path.is_file()],
             [],

@@ -168,6 +168,9 @@ export default function ProfilePage({
                   onChange={(event) => setResume(event.target.files[0] || null)}
                 />
               </label>
+              <p className="muted resume-privacy-note">
+                Only resume professional sections and your skills, projects, experience, education, and certifications are sent to Gemini. Personal/contact details and profile links are excluded.
+              </p>
               <button className="primary-button" disabled={!resume || uploading}>
                 {uploading ? "Reading resume..." : "Upload and update profile"} <span>→</span>
               </button>

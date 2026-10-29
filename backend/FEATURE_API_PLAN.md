@@ -56,11 +56,13 @@ feature hierarchy.
 - **Folder name:** `resume`
 - **Folder location:** `app/features/resume/` (relative to `backend/`)
 - **Included functionality:** Accept a PDF or DOCX resume, store the uploaded
-  file, parse text, extract clearly recognized skills, project titles,
-  experience, education, and certifications, merge only new entries into the
-  candidate profile, and return a summary of additions. Existing profile
-  values are retained. The generic file-writing helper remains shared under
-  `app/services/uploads.py`.
+  file privately, parse text locally, send only recognized professional resume
+  sections and the user's skills, projects, experience, education, and
+  certifications to Gemini, then merge the schema-validated combined profile
+  and return a summary of additions. Personal/contact fields, profile links,
+  passwords, and the personal-information resume section are excluded; existing
+  user-entered values are retained. The generic file-writing helper remains
+  shared under `app/services/uploads.py`.
 - **Endpoint file:** `app/features/resume/routes.py`
 - **Service file:** `app/features/resume/service.py`
 

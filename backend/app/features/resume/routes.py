@@ -4,6 +4,10 @@ from fastapi import APIRouter, Cookie, File, HTTPException, UploadFile
 from fastapi.responses import FileResponse
 
 from app.core.config import SESSION_COOKIE
+from app.features.resume.gemini import (
+    ResumeGeminiConfigurationError,
+    ResumeGeminiServiceError,
+)
 from app.features.resume.service import (
     RESUME_FILE_PREFIX,
     add_extracted_profile,
@@ -26,12 +30,6 @@ async def upload_resume(
     token: Annotated[str | None, Cookie(alias=SESSION_COOKIE)] = None,
 ) -> ProfileUpdateResponse:
     user = get_session_user(token)
-    try:
-        resume_url, extracted = await store_resume(resume, user.id)
-    except ValueError as error:
-        raise HTTPException(status_code=400, detail=str(error)) from error
-
-    previous_resume = user.profile.get("resume", "")
     current_profile = ProfileData.model_validate(
         {
             **user.profile,
@@ -40,6 +38,16 @@ async def upload_resume(
             "email": user.email,
         }
     )
+    try:
+        resume_url, extracted = await store_resume(resume, user.id, current_profile)
+    except ResumeGeminiConfigurationError as error:
+        raise HTTPException(status_code=503, detail=str(error)) from error
+    except ResumeGeminiServiceError as error:
+        raise HTTPException(status_code=502, detail=str(error)) from error
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
+
+    previous_resume = user.profile.get("resume", "")
     current_profile.resume = resume_url
     updated_profile, extracted_added = add_extracted_profile(current_profile, extracted)
     user = update_user_profile(user.id, updated_profile)

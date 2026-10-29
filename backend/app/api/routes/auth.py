@@ -4,6 +4,10 @@ from fastapi import APIRouter, Cookie, File, Form, HTTPException, Response, Uplo
 from pydantic import ValidationError
 
 from app.core.config import SESSION_COOKIE
+from app.features.resume.gemini import (
+    ResumeGeminiConfigurationError,
+    ResumeGeminiServiceError,
+)
 from app.features.resume.service import (
     add_extracted_profile,
     promote_staged_resume,
@@ -48,7 +52,11 @@ async def signup(
 
     data.profile_picture = await save_upload(profile_picture)
     try:
-        data.resume, extracted = await store_resume(resume, owner_id=0)
+        data.resume, extracted = await store_resume(resume, owner_id=0, profile=data)
+    except ResumeGeminiConfigurationError as error:
+        raise HTTPException(status_code=503, detail=str(error)) from error
+    except ResumeGeminiServiceError as error:
+        raise HTTPException(status_code=502, detail=str(error)) from error
     except ValueError as error:
         raise HTTPException(status_code=400, detail=str(error)) from error
     data, extracted_added = add_extracted_profile(data, extracted)

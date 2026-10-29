@@ -783,6 +783,12 @@ a {
   list-style: none;
 }
 
+.resume-privacy-note {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
 .dashboard-section {
   padding: 28px 0;
   border-bottom: 1px solid var(--line);
