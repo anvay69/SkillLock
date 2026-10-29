@@ -691,5 +691,52 @@
   "test_login": {
     "email": "ananya@example.com",
     "password": "SkillLockDemo2026!"
-  }
+  },
+  "jobs": [
+    {
+      "id": "job-backend-py",
+      "title": "Backend Developer",
+      "company": "Northstar Labs",
+      "location": "Remote",
+      "job_type": "Full-time",
+      "description": "Build and maintain scalable backend services using Python and FastAPI. Work with SQL databases, write clean APIs, and deploy with Docker.",
+      "required_skills": ["Python", "FastAPI", "SQL", "Docker", "Git"]
+    },
+    {
+      "id": "job-frontend-react",
+      "title": "Frontend Developer",
+      "company": "BrightPath Inc.",
+      "location": "Bangalore, India",
+      "job_type": "Full-time",
+      "description": "Develop responsive user interfaces using React and TypeScript. Collaborate with designers and backend engineers to deliver polished web apps.",
+      "required_skills": ["React", "TypeScript", "JavaScript", "CSS", "Git"]
+    },
+    {
+      "id": "job-fullstack",
+      "title": "Full Stack Engineer",
+      "company": "CloudNova",
+      "location": "Hybrid — Mumbai",
+      "job_type": "Full-time",
+      "description": "Own features end-to-end from database to UI. Build APIs with Python/FastAPI and frontends with React. Deploy using Docker and AWS.",
+      "required_skills": ["Python", "FastAPI", "React", "SQL", "Docker", "AWS", "Git"]
+    },
+    {
+      "id": "job-devops",
+      "title": "DevOps Engineer",
+      "company": "InfraScale",
+      "location": "Remote",
+      "job_type": "Full-time",
+      "description": "Manage CI/CD pipelines, containerized deployments, and cloud infrastructure. Monitor and improve system reliability.",
+      "required_skills": ["Docker", "AWS", "Kubernetes", "Linux", "Git", "Terraform", "CI/CD"]
+    },
+    {
+      "id": "job-data-science",
+      "title": "Junior Data Scientist",
+      "company": "DataMinds",
+      "location": "Pune, India",
+      "job_type": "Full-time",
+      "description": "Analyze datasets, build predictive models, and present insights. Work with Python data libraries and machine learning frameworks.",
+      "required_skills": ["Python", "SQL", "Pandas", "Scikit-learn", "Matplotlib", "Jupyter Notebook"]
+    }
+  ]
 }
