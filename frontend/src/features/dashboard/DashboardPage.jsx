@@ -6,13 +6,14 @@ import placeholders from "./dashboard_placeholders.json";
 
 function PlaceholderCards({ items }) {
   return (
-    <div className="dashboard-cards">
+    <div className="opportunity-empty-state">
       {items.map((item) => (
-        <article className="dashboard-card" key={item.title}>
+        <article className="opportunity-empty-item" key={item.title}>
           <span className="placeholder-label">{item.label}</span>
-          <h3>{item.title}</h3>
-          <p>{item.description}</p>
-          <span className="placeholder-link">More details soon</span>
+          <div>
+            <h3>{item.title}</h3>
+            <p>{item.description}</p>
+          </div>
         </article>
       ))}
     </div>
@@ -50,20 +51,24 @@ export default function DashboardPage({ user, extractedAdded, onProfile, onLogou
     <main className="dashboard-page">
       <BrandHeader>
         <div className="dashboard-nav">
-          <button className="profile-link" onClick={onProfile}>View my profile <span>↗</span></button>
+          <span className="nav-link active" aria-current="page">Dashboard</span>
+          <button className="nav-link" onClick={onProfile}>Profile</button>
+          <a className="nav-link" href="#available-assessments">Assessments</a>
           <button className="logout-button" onClick={logout}>Sign out</button>
         </div>
       </BrandHeader>
       <div className="dashboard-content">
         <section className="dashboard-welcome">
-          <p className="eyebrow">YOUR SKILLLOCK DASHBOARD</p>
-          <h1>Welcome, <em>{user.name.split(" ")[0]}</em>.</h1>
-          <p>Your professional story, and what comes next, all in one place.</p>
-          <button className="profile-link welcome-profile-link" onClick={onProfile}>View your candidate profile <span>→</span></button>
+          <div>
+            <p className="eyebrow">CANDIDATE DASHBOARD</p>
+            <h1>Welcome back, {user.name.split(" ")[0]}.</h1>
+            <p>Your profile and assessment progress, together in one place.</p>
+          </div>
+          <button className="primary-button" onClick={onProfile}>Review your profile <span aria-hidden="true">→</span></button>
         </section>
         {error && <p className="error">{error}</p>}
         <ExtractionSummary extracted={extractedAdded} />
-        <section className="dashboard-section">
+        <section className="dashboard-section" id="available-assessments">
           <div className="dashboard-section-heading">
             <div><p className="eyebrow">BUILD YOUR NEXT CHAPTER</p><h2>Available Assessments</h2></div>
             <span className="section-count">{String(assessments.length).padStart(2, "0")}</span>
@@ -84,7 +89,7 @@ export default function DashboardPage({ user, extractedAdded, onProfile, onLogou
             </div>
           ) : !error ? <p className="muted">Loading assessments...</p> : null}
         </section>
-        <section className="dashboard-section">
+        <section className="dashboard-section" id="assessment-history">
           <div className="dashboard-section-heading">
             <div><p className="eyebrow">YOUR PROGRESS</p><h2>Assessment History</h2></div>
             <span className="section-count">{String(history.length).padStart(2, "0")}</span>
@@ -107,7 +112,6 @@ export default function DashboardPage({ user, extractedAdded, onProfile, onLogou
         <section className="dashboard-section">
           <div className="dashboard-section-heading">
             <div><p className="eyebrow">OPPORTUNITIES FOR YOU</p><h2>Jobs Matched to You</h2></div>
-            <span className="section-count">—</span>
           </div>
           <PlaceholderCards items={placeholders.jobs} />
         </section>
