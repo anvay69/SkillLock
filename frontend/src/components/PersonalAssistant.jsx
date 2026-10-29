@@ -3,7 +3,8 @@ import React, { useState, useEffect, useRef } from "react";
 export default function PersonalAssistant({ user }) {
   const [isOpen, setIsOpen] = useState(false);
   const [apiKey, setApiKey] = useState(() => (localStorage.getItem("gemini_api_key") || "").trim());
-  const [showSettings, setShowSettings] = useState(false);
+  const [showSettings, setShowSettings] = useState(() => !localStorage.getItem("gemini_api_key"));
+  const [keySaved, setKeySaved] = useState(false);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -267,36 +268,67 @@ Answer user questions concisely, warmly, and helpfully. Keep answers to 2-4 sent
           </div>
 
           {/* Settings Drawer (API Key) */}
-          {(showSettings || !apiKey) && (
+          {showSettings && (
             <div
               style={{
                 background: "#f4f7f4",
                 borderBottom: "1px solid #e1e7e2",
-                padding: "10px 14px",
+                padding: "12px 14px",
                 fontSize: "12px",
               }}
             >
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px", fontWeight: 500 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px", fontWeight: 500 }}>
                 <span>Gemini API Key</span>
-                {!apiKey && <span style={{ color: "#d25a2b" }}>Required to chat</span>}
+                {!apiKey ? (
+                  <span style={{ color: "#d25a2b", fontSize: "11px" }}>Required to chat</span>
+                ) : (
+                  <span style={{ color: "#226c50", fontSize: "11px" }}>Configured ✓</span>
+                )}
               </div>
-              <input
-                type="password"
-                value={apiKey}
-                placeholder="Paste Gemini API key..."
-                onChange={(e) => handleSaveKey(e.target.value)}
-                style={{
-                  width: "100%",
-                  padding: "6px 9px",
-                  border: "1px solid #d2ded5",
-                  borderRadius: "6px",
-                  fontSize: "12px",
-                  boxSizing: "border-box",
-                  background: "#fff",
-                }}
-              />
-              <div style={{ fontSize: "10px", color: "#6a7972", marginTop: "4px" }}>
-                Saved locally in your browser.
+              <div style={{ display: "flex", gap: "6px" }}>
+                <input
+                  type="text"
+                  value={apiKey}
+                  placeholder="Paste your Gemini API key..."
+                  onChange={(e) => handleSaveKey(e.target.value)}
+                  style={{
+                    flex: 1,
+                    padding: "7px 10px",
+                    border: "1px solid #c8d6cb",
+                    borderRadius: "6px",
+                    fontSize: "12px",
+                    boxSizing: "border-box",
+                    background: "#fff",
+                    outline: "none",
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleSaveKey(apiKey);
+                    setKeySaved(true);
+                    setTimeout(() => {
+                      setKeySaved(false);
+                      setShowSettings(false);
+                    }, 600);
+                  }}
+                  style={{
+                    background: keySaved ? "#226c50" : "#1c4936",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: "6px",
+                    padding: "0 12px",
+                    fontSize: "11.5px",
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    transition: "all 0.15s",
+                  }}
+                >
+                  {keySaved ? "Saved! ✓" : "Save"}
+                </button>
+              </div>
+              <div style={{ fontSize: "10.5px", color: "#6a7972", marginTop: "5px" }}>
+                Saved locally in your browser. Won't be pushed to Git.
               </div>
             </div>
           )}
