@@ -1,6 +1,8 @@
 backend/.venv/
+backend/.env
 __pycache__/
 backend/*.db
 backend/uploads/
+/backend/private_resumes/**/*.pdf
 frontend/node_modules/
 frontend/dist/

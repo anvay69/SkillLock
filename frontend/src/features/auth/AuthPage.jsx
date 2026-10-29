@@ -15,13 +15,11 @@ export default function AuthPage({ mode, onModeChange, onLogin }) {
           <div className="eyebrow"><span className="eyebrow-dot" /> YOUR CAREER, IN FOCUS</div>
           <h1>Make your skills<br />speak for <em>you.</em></h1>
           <p>One place for the work, experience, and details that make your professional story yours.</p>
-          <div className="intro-stats">
-            <div><strong>01</strong><span>Your profile</span></div>
-            <div><strong>∞</strong><span>Your potential</span></div>
-          </div>
-          <div className="orbit orbit-one" />
-          <div className="orbit orbit-two" />
-          <div className="orbit orbit-three" />
+          <ul className="intro-features">
+            <li>Bring your experience and skills into one profile.</li>
+            <li>Practice with focused, timed assessments.</li>
+            <li>Keep your progress and professional details together.</li>
+          </ul>
         </aside>
         <section className="auth-card">
           <div className="auth-card-heading">
