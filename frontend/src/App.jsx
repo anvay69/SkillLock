@@ -4,6 +4,7 @@ import AuthPage from "./features/auth/AuthPage";
 import AssessmentPage from "./features/assessments/AssessmentPage";
 import DashboardPage from "./features/dashboard/DashboardPage";
 import ProfilePage from "./features/profile/ProfilePage";
+import PersonalAssistant from "./components/PersonalAssistant";
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -36,8 +37,10 @@ export default function App() {
 
   if (loading) return <main className="loading-page">Loading SkillLock...</main>;
   if (!user) return <AuthPage mode={mode} onModeChange={setMode} onLogin={signIn} />;
+
+  let pageContent = null;
   if (page === "profile") {
-    return (
+    pageContent = (
       <ProfilePage
         user={user}
         extractedAdded={extractedAdded}
@@ -49,20 +52,29 @@ export default function App() {
         onLogout={signOut}
       />
     );
+  } else if (page === "assessment" && assessmentId) {
+    pageContent = (
+      <AssessmentPage assessmentId={assessmentId} onDashboard={() => setPage("dashboard")} />
+    );
+  } else {
+    pageContent = (
+      <DashboardPage
+        user={user}
+        extractedAdded={extractedAdded}
+        onProfile={() => setPage("profile")}
+        onAssessment={(id) => {
+          setAssessmentId(id);
+          setPage("assessment");
+        }}
+        onLogout={signOut}
+      />
+    );
   }
-  if (page === "assessment" && assessmentId) {
-    return <AssessmentPage assessmentId={assessmentId} onDashboard={() => setPage("dashboard")} />;
-  }
+
   return (
-    <DashboardPage
-      user={user}
-      extractedAdded={extractedAdded}
-      onProfile={() => setPage("profile")}
-      onAssessment={(id) => {
-        setAssessmentId(id);
-        setPage("assessment");
-      }}
-      onLogout={signOut}
-    />
+    <>
+      {pageContent}
+      {page !== "assessment" && <PersonalAssistant user={user} />}
+    </>
   );
 }
