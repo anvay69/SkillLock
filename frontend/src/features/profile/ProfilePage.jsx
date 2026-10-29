@@ -25,6 +25,7 @@ export default function ProfilePage({
   onNavigateDashboard,
   onJobMatching,
   onJDAnalysis,
+  onResumeParser,
   onLogout,
 }) {
   const [error, setError] = useState("");
@@ -72,6 +73,7 @@ export default function ProfilePage({
           <span className="nav-link active" aria-current="page">Profile</span>
           <button className="nav-link" onClick={onJobMatching}>Job matching</button>
           <button className="nav-link" onClick={onJDAnalysis}>JD analysis</button>
+          <button className="nav-link" onClick={onResumeParser}>Resume parser</button>
           <button className="logout-button" onClick={logout}>Sign out</button>
         </div>
       </BrandHeader>

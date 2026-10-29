@@ -21,7 +21,7 @@ function SkillList({ title, skills, variant }) {
   );
 }
 
-export default function JobMatchingPage({ onDashboard, onProfile, onJDAnalysis, onLogout }) {
+export default function JobMatchingPage({ onDashboard, onProfile, onJDAnalysis, onResumeParser, onLogout }) {
   const [jobDescription, setJobDescription] = useState("");
   const [linkedinUrl, setLinkedinUrl] = useState("");
   const [result, setResult] = useState(null);
@@ -94,6 +94,7 @@ export default function JobMatchingPage({ onDashboard, onProfile, onJDAnalysis, 
           <button className="nav-link" onClick={onProfile}>Profile</button>
           <span className="nav-link active" aria-current="page">Job matching</span>
           <button className="nav-link" onClick={onJDAnalysis}>JD analysis</button>
+          <button className="nav-link" onClick={onResumeParser}>Resume parser</button>
           <button className="logout-button" onClick={logout}>Sign out</button>
         </div>
       </BrandHeader>

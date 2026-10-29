@@ -1158,6 +1158,50 @@ a {
   line-height: 1.6;
 }
 
+.resume-parser-form > .primary-button {
+  min-width: 190px;
+}
+
+.resume-parser-results {
+  display: grid;
+  gap: 20px;
+}
+
+.resume-parser-detail h3 {
+  margin: 0 0 10px;
+  font-size: 17px;
+}
+
+.resume-parser-detail > .muted {
+  margin: 0;
+}
+
+.resume-parser-items {
+  display: grid;
+  gap: 10px;
+}
+
+.resume-parser-items article {
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #fff;
+}
+
+.resume-parser-items article h4,
+.resume-parser-items article p {
+  margin: 0;
+}
+
+.resume-parser-items article h4 + p,
+.resume-parser-items article p + p {
+  margin-top: 5px;
+}
+
+.resume-parser-export {
+  justify-self: start;
+}
+
 .job-skill-columns {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

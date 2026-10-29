@@ -106,6 +106,7 @@ export default function DashboardPage({
   onAssessment,
   onJobMatching,
   onJDAnalysis,
+  onResumeParser,
 }) {
   const [error, setError] = useState("");
   const [assessments, setAssessments] = useState([]);
@@ -142,6 +143,7 @@ export default function DashboardPage({
           <a className="nav-link" href="#available-assessments">Assessments</a>
           <button className="nav-link" onClick={onJobMatching}>Job matching</button>
           <button className="nav-link" onClick={onJDAnalysis}>JD analysis</button>
+          <button className="nav-link" onClick={onResumeParser}>Resume parser</button>
           <button className="logout-button" onClick={logout}>Sign out</button>
         </div>
       </BrandHeader>
@@ -184,6 +186,10 @@ export default function DashboardPage({
           <div className="job-matching-promo jd-analysis-promo">
             <p>Review required and preferred skills and get practical suggestions without comparing against your profile.</p>
             <button className="secondary-button" onClick={onJDAnalysis}>Analyze a JD <span aria-hidden="true">→</span></button>
+          </div>
+          <div className="job-matching-promo jd-analysis-promo">
+            <p>Extract structured skills and career details from a PDF or DOCX resume, then export them as JSON.</p>
+            <button className="secondary-button" onClick={onResumeParser}>Parse a resume <span aria-hidden="true">→</span></button>
           </div>
         </section>
         <section className="dashboard-section" id="available-assessments">

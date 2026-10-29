@@ -17,6 +17,7 @@ export default function JDAnalysisPage({
   onDashboard,
   onProfile,
   onJobMatching,
+  onResumeParser,
   onLogout,
 }) {
   const [jobDescription, setJobDescription] = useState("");
@@ -64,6 +65,7 @@ export default function JDAnalysisPage({
           <button className="nav-link" onClick={onDashboard}>Dashboard</button>
           <button className="nav-link" onClick={onProfile}>Profile</button>
           <button className="nav-link" onClick={onJobMatching}>Job matching</button>
+          <button className="nav-link" onClick={onResumeParser}>Resume parser</button>
           <span className="nav-link active" aria-current="page">JD analysis</span>
           <button className="logout-button" onClick={logout}>Sign out</button>
         </div>

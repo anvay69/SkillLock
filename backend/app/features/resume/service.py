@@ -5,6 +5,8 @@ from pathlib import Path
 from uuid import uuid4
 
 from docx import Document
+from docx.table import Table
+from docx.text.paragraph import Paragraph
 from fastapi import UploadFile
 from pypdf import PdfReader
 
@@ -29,13 +31,17 @@ HEADINGS = {
     "skills": "skills",
     "technical skills": "skills",
     "core skills": "skills",
+    "technical proficiencies": "skills",
     "projects": "projects",
     "personal projects": "projects",
+    "selected projects": "projects",
     "work experience": "experience",
     "professional experience": "experience",
+    "work history": "experience",
     "experience": "experience",
     "employment": "experience",
     "education": "education",
+    "academic background": "education",
     "certifications": "certifications",
     "certificates": "certifications",
     "licenses and certifications": "certifications",
@@ -70,14 +76,18 @@ def _read_resume(path: Path) -> str:
         return "\n".join(page.extract_text() or "" for page in PdfReader(path).pages)
     if path.suffix.lower() == ".docx":
         document = Document(path)
-        paragraphs = [paragraph.text for paragraph in document.paragraphs]
-        tables = [
-            cell.text
-            for table in document.tables
-            for row in table.rows
-            for cell in row.cells
-        ]
-        return "\n".join([*paragraphs, *tables])
+        content = []
+        for item in document.iter_inner_content():
+            if isinstance(item, Paragraph):
+                content.append(item.text)
+            elif isinstance(item, Table):
+                content.extend(
+                    line
+                    for row in item.rows
+                    for cell in row.cells
+                    for line in cell.text.splitlines()
+                )
+        return "\n".join(content)
     raise ValueError("Resume must be a PDF or DOCX file.")
 
 
@@ -92,14 +102,23 @@ def _sections(text: str) -> dict[str, list[str]]:
         line = _clean_line(raw_line)
         if not line:
             continue
+        line = re.sub(r"\s+", " ", line).strip()
         heading = re.sub(r"[:\s]+$", "", line).lower()
         if heading in HEADINGS:
             current = HEADINGS[heading]
             sections.setdefault(current, [])
         elif heading in EXCLUDED_HEADINGS:
             current = None
-        elif current:
-            sections[current].append(line)
+        else:
+            inline_heading = re.match(r"^([^:|–—-]{2,40})\s*(?::|\||[-–—])\s*(.+)$", line)
+            inline_name = inline_heading.group(1).strip().lower() if inline_heading else ""
+            if inline_name in HEADINGS:
+                current = HEADINGS[inline_name]
+                sections.setdefault(current, []).append(inline_heading.group(2).strip())
+            elif inline_name in EXCLUDED_HEADINGS:
+                current = None
+            elif current:
+                sections[current].append(line)
     return sections
 
 

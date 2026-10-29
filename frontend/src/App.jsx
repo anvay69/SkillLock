@@ -6,6 +6,7 @@ import DashboardPage from "./features/dashboard/DashboardPage";
 import JDAnalysisPage from "./features/jd-analysis/JDAnalysisPage";
 import JobMatchingPage from "./features/job-matching/JobMatchingPage";
 import ProfilePage from "./features/profile/ProfilePage";
+import ResumeParserPage from "./features/resume-parser/ResumeParserPage";
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -50,6 +51,7 @@ export default function App() {
         onNavigateDashboard={() => setPage("dashboard")}
         onJobMatching={() => setPage("job-matching")}
         onJDAnalysis={() => setPage("jd-analysis")}
+        onResumeParser={() => setPage("resume-parser")}
         onLogout={signOut}
       />
     );
@@ -63,6 +65,7 @@ export default function App() {
         onDashboard={() => setPage("dashboard")}
         onProfile={() => setPage("profile")}
         onJDAnalysis={() => setPage("jd-analysis")}
+        onResumeParser={() => setPage("resume-parser")}
         onLogout={signOut}
       />
     );
@@ -73,6 +76,18 @@ export default function App() {
         onDashboard={() => setPage("dashboard")}
         onProfile={() => setPage("profile")}
         onJobMatching={() => setPage("job-matching")}
+        onResumeParser={() => setPage("resume-parser")}
+        onLogout={signOut}
+      />
+    );
+  }
+  if (page === "resume-parser") {
+    return (
+      <ResumeParserPage
+        onDashboard={() => setPage("dashboard")}
+        onProfile={() => setPage("profile")}
+        onJobMatching={() => setPage("job-matching")}
+        onJDAnalysis={() => setPage("jd-analysis")}
         onLogout={signOut}
       />
     );
@@ -84,6 +99,7 @@ export default function App() {
       onProfile={() => setPage("profile")}
       onJobMatching={() => setPage("job-matching")}
       onJDAnalysis={() => setPage("jd-analysis")}
+      onResumeParser={() => setPage("resume-parser")}
       onAssessment={(id) => {
         setAssessmentId(id);
         setPage("assessment");
