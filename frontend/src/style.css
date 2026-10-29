@@ -683,6 +683,106 @@ a {
   min-width: 190px;
 }
 
+.candidate-snapshot {
+  margin: 22px 0 0;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--paper);
+  box-shadow: var(--shadow);
+}
+
+.candidate-snapshot-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.candidate-snapshot-heading .eyebrow {
+  margin: 0 0 4px;
+  color: var(--green);
+}
+
+.candidate-snapshot-heading h2 {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 600;
+}
+
+.text-button {
+  padding: 6px 0;
+  border: 0;
+  background: transparent;
+  color: var(--green-dark);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.candidate-snapshot-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(130px, 0.7fr) minmax(0, 1fr);
+  border-top: 1px solid var(--line);
+}
+
+.candidate-snapshot-item {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 15px 18px 2px 0;
+}
+
+.candidate-snapshot-item + .candidate-snapshot-item {
+  padding-left: 18px;
+  border-left: 1px solid var(--line);
+}
+
+.candidate-snapshot-label {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.candidate-snapshot-item > strong {
+  color: var(--ink);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.candidate-snapshot-hint,
+.candidate-snapshot-empty {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.candidate-skill-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.candidate-more-skills {
+  align-self: center;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.candidate-expertise-list {
+  display: grid;
+  gap: 5px;
+  margin: 0;
+  padding: 0;
+  color: var(--ink-soft);
+  font-size: 14px;
+  list-style: none;
+}
+
 .dashboard-section {
   padding: 28px 0;
   border-bottom: 1px solid var(--line);
@@ -1926,6 +2026,24 @@ a {
   .dashboard-cards,
   .opportunity-empty-state {
     grid-template-columns: 1fr;
+  }
+
+  .candidate-snapshot-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .candidate-snapshot-item,
+  .candidate-snapshot-item + .candidate-snapshot-item {
+    padding: 12px 0;
+    border-left: 0;
+  }
+
+  .candidate-snapshot-item + .candidate-snapshot-item {
+    border-top: 1px solid var(--line);
+  }
+
+  .candidate-snapshot-heading {
+    align-items: flex-start;
   }
 
   .job-matching-promo {
