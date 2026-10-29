@@ -3,6 +3,7 @@ import { request } from "./api/client";
 import AuthPage from "./features/auth/AuthPage";
 import AssessmentPage from "./features/assessments/AssessmentPage";
 import DashboardPage from "./features/dashboard/DashboardPage";
+import JDAnalysisPage from "./features/jd-analysis/JDAnalysisPage";
 import JobMatchingPage from "./features/job-matching/JobMatchingPage";
 import ProfilePage from "./features/profile/ProfilePage";
 
@@ -48,6 +49,7 @@ export default function App() {
         }}
         onNavigateDashboard={() => setPage("dashboard")}
         onJobMatching={() => setPage("job-matching")}
+        onJDAnalysis={() => setPage("jd-analysis")}
         onLogout={signOut}
       />
     );
@@ -60,6 +62,17 @@ export default function App() {
       <JobMatchingPage
         onDashboard={() => setPage("dashboard")}
         onProfile={() => setPage("profile")}
+        onJDAnalysis={() => setPage("jd-analysis")}
+        onLogout={signOut}
+      />
+    );
+  }
+  if (page === "jd-analysis") {
+    return (
+      <JDAnalysisPage
+        onDashboard={() => setPage("dashboard")}
+        onProfile={() => setPage("profile")}
+        onJobMatching={() => setPage("job-matching")}
         onLogout={signOut}
       />
     );
@@ -70,6 +83,7 @@ export default function App() {
       extractedAdded={extractedAdded}
       onProfile={() => setPage("profile")}
       onJobMatching={() => setPage("job-matching")}
+      onJDAnalysis={() => setPage("jd-analysis")}
       onAssessment={(id) => {
         setAssessmentId(id);
         setPage("assessment");
