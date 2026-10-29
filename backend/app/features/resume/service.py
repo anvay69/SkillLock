@@ -1,14 +1,14 @@
+import logging
 import re
-from zipfile import BadZipFile
+import shutil
 from pathlib import Path
+from uuid import uuid4
 
 from docx import Document
-from docx.opc.exceptions import PackageNotFoundError
 from fastapi import UploadFile
 from pypdf import PdfReader
-from pypdf.errors import PdfReadError
 
-from app.core.config import UPLOADS
+from app.core.config import PRIVATE_RESUMES, UPLOADS
 from app.schemas.profile import (
     Certification,
     Education,
@@ -17,7 +17,10 @@ from app.schemas.profile import (
     ProfileData,
     Project,
 )
-from app.services.uploads import save_upload
+
+logger = logging.getLogger(__name__)
+MAX_RESUME_BYTES = 5 * 1024 * 1024
+RESUME_FILE_PREFIX = "/api/me/resume/file/"
 
 
 def _normalized(value: str) -> str:
@@ -185,9 +188,15 @@ def _certifications(lines: list[str]) -> list[Certification]:
 
 def extract_resume(path: Path) -> ExtractedProfile:
     try:
-        sections = _sections(_read_resume(path))
-    except (OSError, BadZipFile, PackageNotFoundError, PdfReadError) as error:
+        text = _read_resume(path)
+    except Exception as error:
+        logger.warning("Resume parsing failed (%s).", type(error).__name__)
         raise ValueError("The uploaded resume could not be read.") from error
+    if not text.strip():
+        raise ValueError(
+            "No readable text was found. Use a text-based PDF or a DOCX resume."
+        )
+    sections = _sections(text)
     return ExtractedProfile(
         skills=_skills(sections.get("skills", [])),
         projects=_projects(sections.get("projects", [])),
@@ -255,16 +264,93 @@ def add_extracted_profile(
     return updated, ExtractedProfile(**added)
 
 
-async def store_resume(upload: UploadFile | None) -> tuple[str, ExtractedProfile]:
+def resume_path(owner_id: int, filename: str) -> Path | None:
+    if (
+        not filename
+        or Path(filename).name != filename
+        or Path(filename).suffix.casefold() not in {".pdf", ".docx"}
+        or not re.fullmatch(r"[0-9a-f]{32}\.(?:pdf|docx)", filename, re.IGNORECASE)
+    ):
+        return None
+    return PRIVATE_RESUMES / str(owner_id) / filename
+
+
+def _resume_filename(resume_url: str) -> str | None:
+    if not resume_url.startswith(RESUME_FILE_PREFIX):
+        return None
+    filename = resume_url.removeprefix(RESUME_FILE_PREFIX)
+    if "/" in filename or "\\" in filename:
+        return None
+    if resume_path(0, filename) is None:
+        return None
+    return filename
+
+
+async def store_resume(
+    upload: UploadFile | None,
+    owner_id: int,
+) -> tuple[str, ExtractedProfile]:
     if upload is None or not upload.filename:
         return "", ExtractedProfile()
-    if Path(upload.filename).suffix.lower() not in {".pdf", ".docx"}:
+    extension = Path(upload.filename).suffix.lower()
+    if extension not in {".pdf", ".docx"}:
         raise ValueError("Resume must be a PDF or DOCX file.")
 
-    resume_url = await save_upload(upload)
+    filename = f"{uuid4().hex}{extension}"
+    destination = resume_path(owner_id, filename)
+    if destination is None:
+        raise ValueError("Resume could not be stored.")
     try:
-        extracted = extract_resume(UPLOADS / Path(resume_url).name)
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        total_size = 0
+        with destination.open("xb") as resume_file:
+            while chunk := await upload.read(64 * 1024):
+                total_size += len(chunk)
+                if total_size > MAX_RESUME_BYTES:
+                    raise ValueError("Resume must be 5 MB or smaller.")
+                resume_file.write(chunk)
+        extracted = extract_resume(destination)
     except ValueError:
-        (UPLOADS / Path(resume_url).name).unlink(missing_ok=True)
+        destination.unlink(missing_ok=True)
         raise
-    return resume_url, extracted
+    except OSError as error:
+        destination.unlink(missing_ok=True)
+        raise ValueError("The uploaded resume could not be stored.") from error
+    return f"{RESUME_FILE_PREFIX}{filename}", extracted
+
+
+def promote_staged_resume(resume_url: str, user_id: int) -> str:
+    filename = _resume_filename(resume_url)
+    if filename is None:
+        return resume_url
+    staged_path = resume_path(0, filename)
+    destination = resume_path(user_id, filename)
+    if staged_path is None or destination is None or not staged_path.is_file():
+        raise OSError("The staged resume file is unavailable.")
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    shutil.move(str(staged_path), str(destination))
+    return resume_url
+
+
+def remove_resume(resume_url: str, owner_id: int) -> None:
+    filename = _resume_filename(resume_url)
+    if filename is not None:
+        stored_path = resume_path(owner_id, filename)
+        if stored_path is not None:
+            stored_path.unlink(missing_ok=True)
+        return
+    old_path = legacy_resume_path(resume_url)
+    if old_path is not None:
+        old_path.unlink(missing_ok=True)
+
+
+def legacy_resume_path(resume_url: str) -> Path | None:
+    prefix = "/uploads/"
+    if not resume_url.startswith(prefix):
+        return None
+    filename = resume_url.removeprefix(prefix)
+    if "/" in filename or "\\" in filename:
+        return None
+    if not re.fullmatch(r"[0-9a-f]{32}\.(?:pdf|docx)", filename, re.IGNORECASE):
+        return None
+    return UPLOADS / filename
