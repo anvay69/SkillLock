@@ -22,6 +22,7 @@ _RESPONSE_SCHEMA = {
         "job_summary": {"type": "STRING"},
         "required_skills": {"type": "ARRAY", "items": {"type": "STRING"}},
         "preferred_skills": {"type": "ARRAY", "items": {"type": "STRING"}},
+        "suggestions": {"type": "ARRAY", "items": {"type": "STRING"}},
         "sources_match": {"type": "BOOLEAN"},
         "mismatch_reason": {"type": "STRING"},
     },
@@ -31,6 +32,7 @@ _RESPONSE_SCHEMA = {
         "job_summary",
         "required_skills",
         "preferred_skills",
+        "suggestions",
         "sources_match",
         "mismatch_reason",
     ],
@@ -57,6 +59,7 @@ class GeminiJobRequirements(BaseModel):
     job_summary: str = Field(max_length=800)
     required_skills: list[str] = Field(max_length=100)
     preferred_skills: list[str] = Field(max_length=100)
+    suggestions: list[str] = Field(default_factory=list, max_length=20)
     sources_match: bool = True
     mismatch_reason: str = Field(default="", max_length=500)
 
@@ -92,7 +95,11 @@ def extract_job_requirements(
         "preserving exact spelling. Put each skill in required or preferred, not "
         "both. If priority is unclear, classify it as required. Do not infer skills "
         "absent from the sources. Merge complementary details from both sources "
-        "and remove duplicate requirements.\n\n"
+        "and remove duplicate requirements. Return 3 to 5 concise, practical "
+        "suggestions for preparing for this role, based only on the supplied job "
+        "facts. Suggestions may cover portfolio projects, interview preparation, "
+        "or how to demonstrate relevant requirements; do not make up employer "
+        "process details.\n\n"
         "When both a public listing and a user-provided description are present, "
         "be permissive when deciding whether they refer to the same opening. Do "
         "not require identical titles, employers, or wording. If even a few "
@@ -167,6 +174,11 @@ def extract_job_requirements(
     extracted.required_skills = [skill.strip() for skill in extracted.required_skills if skill.strip()]
     extracted.preferred_skills = [
         skill.strip() for skill in extracted.preferred_skills if skill.strip()
+    ]
+    extracted.suggestions = [
+        suggestion.strip()
+        for suggestion in extracted.suggestions
+        if suggestion.strip()
     ]
     if has_listing and has_description and not extracted.sources_match:
         raise JobDescriptionMismatchError(

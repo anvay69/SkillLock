@@ -8,7 +8,7 @@ code stays in place. Each feature below owns one folder directly under
 `app/features/`; feature-specific route handlers and services stay together in
 that folder.
 
-The resume, assessments, and job-matching features are implemented and active.
+The resume, assessments, job-matching, and JD-analysis features are implemented and active.
 The AI interview and stored matching-jobs features below are proposed only.
 
 ## Proposed Backend Tree
@@ -33,6 +33,8 @@ backend/
     │   ├── job_matching/               # Implemented
     │   │   ├── routes.py
     │   │   └── service.py
+    │   ├── jd_analysis/                # Implemented
+    │   │   └── routes.py
     │   ├── assessments/                # Implemented
     │   │   └── routes.py
     │   ├── ai_interview/               # Proposed
@@ -115,7 +117,31 @@ The request requires at least one of `job_description` or `linkedin_url`.
 When both are supplied, both texts are analyzed. The response is an analysis
 result, not a saved job listing.
 
-## 3. Assessments
+## 3. JD Analysis
+
+**Status: Implemented.** This authenticated feature reuses job matching's
+validated public LinkedIn scraper and Gemini extraction flow without comparing
+requirements to a candidate profile. Gemini returns structured job metadata,
+required and preferred skills, and practical preparation suggestions. A pasted
+description, LinkedIn URL, or both may be supplied; when both are supplied,
+the existing source-consistency check is applied.
+
+- **Folder name:** `jd_analysis`
+- **Folder location:** `app/features/jd_analysis/` (relative to `backend/`)
+- **Endpoint file:** `app/features/jd_analysis/routes.py`
+- **Request/response schemas:** `app/schemas/jd_analysis.py`
+- **Endpoints:**
+
+| Method | Endpoint | Purpose |
+|---|---|---|
+| `POST` | `/api/jd-analysis/analyze` | Analyze pasted job-description text and/or a public LinkedIn job/post URL; return structured requirements, job summary, and Gemini-generated suggestions without candidate profile matching. |
+
+At least one input (`job_description` or `linkedin_url`) is required.
+LinkedIn scraping follows the safety, redirect, and public-content limits
+documented under Job Matching. Gemini configuration is shared with the
+job-matching feature.
+
+## 4. Assessments
 
 - **Folder name:** `assessments`
 - **Folder location:** `app/features/assessments/` (relative to `backend/`)
@@ -143,7 +169,7 @@ Attempt and question endpoints must verify ownership against the current
 candidate session. Event tracking records reported browser signals; it should
 not claim to prove candidate intent or prevent switching.
 
-## 4. AI Interview
+## 5. AI Interview
 
 - **Folder name:** `ai_interview`
 - **Folder location:** `app/features/ai_interview/` (relative to `backend/`)
@@ -167,7 +193,7 @@ not claim to prove candidate intent or prevent switching.
 
 All session routes are candidate-authenticated and scoped to their owner.
 
-## 5. Matching Jobs
+## 6. Matching Jobs
 
 - **Folder name:** `matching_jobs`
 - **Folder location:** `app/features/matching_jobs/` (relative to `backend/`)

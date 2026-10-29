@@ -25,6 +25,10 @@ class GeminiJobExtractionTests(unittest.TestCase):
                                         "job_summary": "Build and maintain API services.",
                                         "required_skills": ["Python", "FastAPI"],
                                         "preferred_skills": ["Docker"],
+                                        "suggestions": [
+                                            "Build a small API portfolio project.",
+                                            "Prepare examples of debugging services.",
+                                        ],
                                         "sources_match": True,
                                         "mismatch_reason": "",
                                     }
@@ -58,6 +62,7 @@ class GeminiJobExtractionTests(unittest.TestCase):
         self.assertNotIn("test-secret", request.full_url)
         self.assertEqual(result.required_skills, ["Python", "FastAPI"])
         self.assertEqual(result.preferred_skills, ["Docker"])
+        self.assertEqual(len(result.suggestions), 2)
         self.assertEqual(result.company, "Example Co")
 
     def test_sends_both_sources_and_combines_them_as_one_job(self) -> None:
@@ -82,6 +87,7 @@ class GeminiJobExtractionTests(unittest.TestCase):
         self.assertIn("meaningful job-related overlap", prompt)
         self.assertTrue(result.sources_match)
         self.assertEqual(result.required_skills, ["Python", "FastAPI"])
+        self.assertTrue(result.suggestions)
 
     def test_partial_job_term_overlap_is_considered_a_match(self) -> None:
         partial_overlap_response = json.loads(json.dumps(self.response_json))

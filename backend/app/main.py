@@ -13,6 +13,7 @@ from app.core.database import initialize_database
 from app.features.assessments.routes import router as assessments_router
 from app.features.job_matching.routes import router as job_matching_router
 from app.features.resume.routes import router as resume_router
+from app.features.jd_analysis.routes import router as jd_analysis_router
 from app.services.security import get_session_user
 
 
@@ -30,6 +31,7 @@ app.include_router(skills.router)
 app.include_router(resume_router)
 app.include_router(assessments_router)
 app.include_router(job_matching_router)
+app.include_router(jd_analysis_router)
 
 
 @app.get("/uploads/{filename}")
