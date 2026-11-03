@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Personal Assistant - Gemini Chatbot</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f1117;
+      --card-bg: #181b24;
+      --sidebar-bg: #13151e;
+      --border: #282d3d;
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+      --user-msg-bg: #312e81;
+      --assistant-msg-bg: #1e2230;
+      --font: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font);
+      background-color: var(--bg);
+      color: var(--text);
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 260px;
+      background: var(--sidebar-bg);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      padding: 1.25rem;
+      gap: 1.25rem;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: #fff;
+    }
+
+    .brand-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #6366f1, #a855f7);
+      display: grid;
+      place-items: center;
+      font-size: 1rem;
+    }
+
+    .new-chat-btn {
+      background: #252a3a;
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.7rem 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      transition: background 0.2s;
+    }
+    .new-chat-btn:hover {
+      background: #2f3549;
+    }
+
+    .sidebar-section {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-top: auto;
+    }
+
+    .settings-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.85rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .settings-label {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .settings-input {
+      background: #0f1117;
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.45rem 0.6rem;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      outline: none;
+    }
+    .settings-input:focus {
+      border-color: var(--primary);
+    }
+
+    /* Main Chat Container */
+    .chat-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      position: relative;
+    }
+
+    .top-bar {
+      height: 56px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1.5rem;
+      background: rgba(15, 17, 23, 0.8);
+      backdrop-filter: blur(8px);
+    }
+
+    .assistant-status {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.88rem;
+      font-weight: 600;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+    }
+
+    /* Messages Area */
+    .messages-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      max-width: 860px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .message-row {
+      display: flex;
+      gap: 0.85rem;
+      animation: fadeIn 0.25s ease-out;
+    }
+
+    .message-row.user {
+      flex-direction: row-reverse;
+    }
+
+    .avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 0.95rem;
+      flex-shrink: 0;
+    }
+
+    .avatar.assistant {
+      background: linear-gradient(135deg, #4f46e5, #9333ea);
+    }
+
+    .avatar.user {
+      background: #374151;
+    }
+
+    .bubble {
+      max-width: 80%;
+      padding: 0.9rem 1.15rem;
+      border-radius: 12px;
+      font-size: 0.94rem;
+      line-height: 1.55;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .message-row.user .bubble {
+      background: var(--user-msg-bg);
+      border-top-right-radius: 4px;
+      color: #fff;
+    }
+
+    .message-row.assistant .bubble {
+      background: var(--assistant-msg-bg);
+      border: 1px solid var(--border);
+      border-top-left-radius: 4px;
+      color: var(--text);
+    }
+
+    /* Empty state */
+    .empty-state {
+      margin: auto;
+      text-align: center;
+      max-width: 480px;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .empty-icon {
+      font-size: 3rem;
+    }
+
+    .empty-title {
+      font-size: 1.35rem;
+      font-weight: 700;
+    }
+
+    .empty-sub {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .suggestions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: center;
+      margin-top: 0.5rem;
+    }
+
+    .suggestion-pill {
+      background: #1c202d;
+      border: 1px solid var(--border);
+      color: #d1d5db;
+      padding: 0.5rem 0.85rem;
+      border-radius: 20px;
+      font-size: 0.82rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .suggestion-pill:hover {
+      background: #272d3f;
+      color: #fff;
+      border-color: #4b5563;
+    }
+
+    /* Input area */
+    .input-wrapper {
+      padding: 1.25rem 1.5rem;
+      background: linear-gradient(180deg, rgba(15, 17, 23, 0) 0%, rgba(15, 17, 23, 1) 40%);
+    }
+
+    .input-form {
+      max-width: 860px;
+      margin: 0 auto;
+      display: flex;
+      gap: 0.65rem;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 0.5rem 0.75rem;
+      align-items: center;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.25);
+    }
+
+    .input-form:focus-within {
+      border-color: var(--primary);
+    }
+
+    .chat-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.95rem;
+      padding: 0.4rem 0.5rem;
+    }
+
+    .chat-input::placeholder {
+      color: #6b7280;
+    }
+
+    .send-btn {
+      background: var(--primary);
+      border: none;
+      color: #fff;
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      transition: background 0.2s, transform 0.1s;
+      flex-shrink: 0;
+    }
+    .send-btn:hover {
+      background: var(--primary-hover);
+    }
+    .send-btn:active {
+      transform: scale(0.95);
+    }
+    .send-btn:disabled {
+      background: #374151;
+      cursor: not-allowed;
+    }
+
+    /* Typing indicator */
+    .typing-dots {
+      display: flex;
+      gap: 4px;
+      padding: 6px 0;
+    }
+    .typing-dots span {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--text-muted);
+      animation: bounce 1.4s infinite ease-in-out both;
+    }
+    .typing-dots span:nth-child(1) { animation-delay: -0.32s; }
+    .typing-dots span:nth-child(2) { animation-delay: -0.16s; }
+
+    @keyframes bounce {
+      0%, 80%, 100% { transform: scale(0); }
+      40% { transform: scale(1); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Left Sidebar -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-icon">✨</div>
+      <span>Personal Assistant</span>
+    </div>
+
+    <button class="new-chat-btn" id="newChatBtn">
+      <span>+</span> New Chat
+    </button>
+
+    <div class="sidebar-section">Settings</div>
+    <div class="settings-card">
+      <label class="settings-label" for="apiKeyInput">Gemini API Key</label>
+      <input 
+        type="password" 
+        id="apiKeyInput" 
+        class="settings-input" 
+        placeholder="Paste your key here..."
+      />
+      <div style="font-size: 0.72rem; color: #6b7280;">Stored locally in your browser.</div>
+    </div>
+  </aside>
+
+  <!-- Chat Area -->
+  <main class="chat-container">
+    <header class="top-bar">
+      <div class="assistant-status">
+        <div class="status-dot"></div>
+        <span>Personal AI Assistant</span>
+      </div>
+      <div style="font-size: 0.8rem; color: var(--text-muted);">Gemini 2.5 Flash</div>
+    </header>
+
+    <div class="messages-area" id="messagesArea">
+      <!-- Empty greeting -->
+      <div class="empty-state" id="emptyState">
+        <div class="empty-icon">🤖</div>
+        <h2 class="empty-title">Hello! How can I help you today?</h2>
+        <p class="empty-sub">I am your personal AI assistant. Ask me anything about programming, career tips, skills, or general knowledge.</p>
+        <div class="suggestions">
+          <button class="suggestion-pill" onclick="sendQuickPrompt(this)">What are the best skills for web development in 2026?</button>
+          <button class="suggestion-pill" onclick="sendQuickPrompt(this)">How can I prepare for a software engineer interview?</button>
+          <button class="suggestion-pill" onclick="sendQuickPrompt(this)">Give me a quick 30-day Python study plan.</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Input Box -->
+    <div class="input-wrapper">
+      <form class="input-form" id="chatForm">
+        <input 
+          type="text" 
+          id="userInput" 
+          class="chat-input" 
+          placeholder="Ask anything..." 
+          autocomplete="off"
+          autofocus
+        />
+        <button type="submit" id="sendBtn" class="send-btn" title="Send message">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+        </button>
+      </form>
+    </div>
+  </main>
+
+  <script>
+    const messagesArea = document.getElementById('messagesArea');
+    const emptyState = document.getElementById('emptyState');
+    const chatForm = document.getElementById('chatForm');
+    const userInput = document.getElementById('userInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const apiKeyInput = document.getElementById('apiKeyInput');
+    const newChatBtn = document.getElementById('newChatBtn');
+
+    let history = [];
+
+    // Load saved API key
+    const savedKey = localStorage.getItem('gemini_api_key') || '';
+    if (savedKey) apiKeyInput.value = savedKey;
+
+    apiKeyInput.addEventListener('change', () => {
+      localStorage.setItem('gemini_api_key', apiKeyInput.value.trim());
+    });
+
+    newChatBtn.addEventListener('click', () => {
+      history = [];
+      messagesArea.innerHTML = '';
+      messagesArea.appendChild(emptyState);
+      userInput.focus();
+    });
+
+    function sendQuickPrompt(el) {
+      userInput.value = el.innerText;
+      chatForm.dispatchEvent(new Event('submit'));
+    }
+
+    function appendMessage(role, text) {
+      if (emptyState && emptyState.parentNode === messagesArea) {
+        messagesArea.removeChild(emptyState);
+      }
+
+      const row = document.createElement('div');
+      row.className = `message-row ${role}`;
+
+      const avatar = document.createElement('div');
+      avatar.className = `avatar ${role}`;
+      avatar.innerText = role === 'user' ? '👤' : '✨';
+
+      const bubble = document.createElement('div');
+      bubble.className = 'bubble';
+      bubble.innerText = text;
+
+      row.appendChild(avatar);
+      row.appendChild(bubble);
+      messagesArea.appendChild(row);
+      messagesArea.scrollTop = messagesArea.scrollHeight;
+
+      return bubble;
+    }
+
+    chatForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const message = userInput.value.trim();
+      if (!message) return;
+
+      const apiKey = apiKeyInput.value.trim();
+      if (!apiKey) {
+        alert('Please enter your Gemini API key in the sidebar settings first!');
+        apiKeyInput.focus();
+        return;
+      }
+
+      // Add user message
+      appendMessage('user', message);
+      userInput.value = '';
+      sendBtn.disabled = true;
+
+      // Add temporary typing indicator
+      const assistantRow = document.createElement('div');
+      assistantRow.className = 'message-row assistant';
+      assistantRow.innerHTML = `
+        <div class="avatar assistant">✨</div>
+        <div class="bubble">
+          <div class="typing-dots">
+            <span></span><span></span><span></span>
+          </div>
+        </div>
+      `;
+      messagesArea.appendChild(assistantRow);
+      messagesArea.scrollTop = messagesArea.scrollHeight;
+
+      try {
+        const res = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: message,
+            api_key: apiKey,
+            history: history
+          })
+        });
+
+        const data = await res.json();
+        assistantRow.remove();
+
+        const reply = data.reply || data.error || 'No response';
+        appendMessage('assistant', reply);
+
+        // Update history
+        history.push({ role: 'user', text: message });
+        history.push({ role: 'model', text: reply });
+      } catch (err) {
+        assistantRow.remove();
+        appendMessage('assistant', '⚠️ Error contacting server: ' + err.message);
+      } finally {
+        sendBtn.disabled = false;
+        userInput.focus();
+      }
+    });
+  </script>
+</body>
+</html>
+

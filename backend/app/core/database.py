@@ -82,6 +82,20 @@ def initialize_database() -> None:
                 event_type TEXT NOT NULL,
                 recorded_at TEXT NOT NULL
             );
+            CREATE TABLE IF NOT EXISTS jobs (
+                id TEXT PRIMARY KEY,
+                title TEXT NOT NULL,
+                company TEXT NOT NULL,
+                location TEXT NOT NULL,
+                job_type TEXT NOT NULL DEFAULT '',
+                description TEXT NOT NULL DEFAULT '',
+                required_skills_json TEXT NOT NULL DEFAULT '[]'
+            );
+            CREATE TABLE IF NOT EXISTS saved_jobs (
+                user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                job_id TEXT NOT NULL REFERENCES jobs(id) ON DELETE CASCADE,
+                PRIMARY KEY (user_id, job_id)
+            );
             """
         )
         db.executemany(
@@ -135,4 +149,19 @@ def initialize_database() -> None:
                     )
                     for position, question in enumerate(assessment["questions"])
                 ],
+            )
+        for job in seed.get("jobs", []):
+            db.execute(
+                """INSERT OR IGNORE INTO jobs
+                   (id, title, company, location, job_type, description, required_skills_json)
+                   VALUES (?, ?, ?, ?, ?, ?, ?)""",
+                (
+                    job["id"],
+                    job["title"],
+                    job["company"],
+                    job["location"],
+                    job.get("job_type", ""),
+                    job.get("description", ""),
+                    json.dumps(job.get("required_skills", [])),
+                ),
             )
