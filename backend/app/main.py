@@ -21,7 +21,7 @@ from app.services.security import get_session_user
 app = FastAPI(title="SkillLock API")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
