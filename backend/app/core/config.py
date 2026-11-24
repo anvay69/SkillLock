@@ -16,3 +16,16 @@ SESSION_DAYS = 14
 PASSWORD_ROUNDS = 310_000
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+
+_cors_origins = os.getenv(
+    "CORS_ORIGINS",
+    os.getenv(
+        "SKILLLOCK_CORS_ORIGINS",
+        "http://localhost:5173,http://127.0.0.1:5173",
+    ),
+)
+CORS_ORIGINS = [
+    origin.strip()
+    for origin in _cors_origins.split(",")
+    if origin.strip()
+]

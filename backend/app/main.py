@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 
 from app.api.routes import auth, skills
-from app.core.config import SESSION_COOKIE, UPLOADS
+from app.core.config import CORS_ORIGINS, SESSION_COOKIE, UPLOADS
 from app.core.database import initialize_database
 from app.features.assessments.routes import router as assessments_router
 from app.features.job_matching.routes import router as job_matching_router
@@ -21,7 +21,7 @@ from app.services.security import get_session_user
 app = FastAPI(title="SkillLock API")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

@@ -24,7 +24,7 @@ A small skill-assessment platform foundation with a FastAPI API and React/Vite f
 
    Open the Vite URL shown in the terminal (usually http://localhost:5173).
 
-SQLite data and uploaded files are stored under `backend/` by default. `SKILLLOCK_DATABASE` and `SKILLLOCK_UPLOADS` can override those paths. Set `SKILLLOCK_SECURE_COOKIE=1` when serving the API over HTTPS.
+SQLite data and uploaded files are stored under `backend/` by default. `SKILLLOCK_DATABASE` and `SKILLLOCK_UPLOADS` can override those paths. Set `SKILLLOCK_SECURE_COOKIE=1` when serving the API over HTTPS. Set `CORS_ORIGINS` to a comma-separated list of allowed frontend origins (for example, `CORS_ORIGINS=http://localhost:5173,https://app.example.com`); the default allows the local Vite origins. `SKILLLOCK_CORS_ORIGINS` is also accepted for compatibility.
 
 To enable Gemini-powered job and resume analysis, copy `backend/.env.example` to `backend/.env`, add your Gemini API key to `GEMINI_API_KEY`, and choose a model with `GEMINI_MODEL` (default: `gemini-2.5-flash`). Restart the API after changing the file. Keep `backend/.env` private; it is git-ignored. A pasted description or a public LinkedIn listing is sent to Gemini for structured job extraction; when both are supplied, Gemini combines them if they share even a few meaningful job-related terms and reports a mismatch only when they clearly describe unrelated roles. Resume extraction sends only recognized professional resume sections and the profile's skills, projects, experience, education, and certifications; personal/contact fields, profile links, and credentials are excluded.
 
