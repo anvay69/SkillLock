@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { request } from "../../api/client";
+import { request, uploadUrl } from "../../api/client";
 import { BrandHeader, PageFooter } from "../../components/SiteChrome";
 import ExtractionSummary from "./ExtractionSummary";
 import ProfileEditForm from "./ProfileEditForm";
@@ -81,7 +81,7 @@ export default function ProfilePage({
         <section className="profile-hero">
           <div className="profile-identity-row">
             {user.profile_picture
-              ? <img className="avatar" src={user.profile_picture} alt={`${user.name}'s profile`} />
+              ? <img className="avatar" src={uploadUrl(user.profile_picture)} alt={`${user.name}'s profile`} />
               : <div className="avatar avatar-placeholder" aria-hidden="true">{user.name?.slice(0, 1)}</div>}
             <div className="profile-identity">
               <p className="eyebrow">@{user.username}</p>
@@ -162,7 +162,7 @@ export default function ProfilePage({
           )} />}
           {!editing && (
           <ProfileSection title="Resume">
-            {user.resume && <a href={user.resume} target="_blank" rel="noreferrer" className="resume-link">View uploaded resume ↗</a>}
+            {user.resume && <a href={uploadUrl(user.resume)} target="_blank" rel="noreferrer" className="resume-link">View uploaded resume ↗</a>}
             <form className="resume-upload" onSubmit={uploadResume}>
               <label className="field">
                 <span>{user.resume ? "Replace resume" : "Upload a resume"}</span>
