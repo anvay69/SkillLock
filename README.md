@@ -22,7 +22,7 @@ A small skill-assessment platform foundation with a FastAPI API and React/Vite f
    npm run dev
    ```
 
-   Open the Vite URL shown in the terminal (usually http://localhost:5173).
+   Open the Vite URL shown in the terminal (usually http://localhost:5173). Copy `frontend/.env.example` to `frontend/.env` to change the backend target; `VITE_BACKEND_URL` defaults to `http://localhost:8000`. `SKILLLOCK_BACKEND_URL` is also accepted for compatibility.
 
 SQLite data and uploaded files are stored under `backend/` by default. `SKILLLOCK_DATABASE` and `SKILLLOCK_UPLOADS` can override those paths. Set `SKILLLOCK_SECURE_COOKIE=1` when serving the API over HTTPS. Set `CORS_ORIGINS` to a comma-separated list of allowed frontend origins (for example, `CORS_ORIGINS=http://localhost:5173,https://app.example.com`); the default allows the local Vite origins. `SKILLLOCK_CORS_ORIGINS` is also accepted for compatibility.
 
